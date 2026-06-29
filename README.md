@@ -107,12 +107,33 @@ This repo is itself a valid Claude Code plugin (`.claude-plugin/plugin.json` +
 > Plugin-marketplace install *also* namespaces by plugin id, so it would double up to
 > `truestack:truestack-orchestrate`; use it only if you prefer plugin-managed updates.
 
-**Manual (drop-in) — recommended:**
+**Drop-in, kept current with `git pull` (symlink) — recommended:**
+Clone once, symlink the `truestack-*` folders into `~/.claude/`, then a `git pull` updates your
+live skills with no re-copy. macOS / Linux:
+```sh
+git clone <your-fork-url> ~/.claude/truestack
+mkdir -p ~/.claude/skills ~/.claude/commands
+for d in ~/.claude/truestack/skills/truestack-*;      do ln -s "$d" ~/.claude/skills/;   done
+for f in ~/.claude/truestack/commands/truestack-*.md; do ln -s "$f" ~/.claude/commands/; done
+# update anytime:  cd ~/.claude/truestack && git pull
+```
+Windows (PowerShell — symlinks need Developer Mode or an admin shell):
+```powershell
+git clone <your-fork-url> "$HOME\.claude\truestack"
+New-Item -ItemType Directory -Force "$HOME\.claude\skills","$HOME\.claude\commands" | Out-Null
+Get-ChildItem "$HOME\.claude\truestack\skills\truestack-*" -Directory | ForEach-Object {
+  New-Item -ItemType SymbolicLink -Path "$HOME\.claude\skills\$($_.Name)" -Target $_.FullName }
+Get-ChildItem "$HOME\.claude\truestack\commands\truestack-*.md" | ForEach-Object {
+  New-Item -ItemType SymbolicLink -Path "$HOME\.claude\commands\$($_.Name)" -Target $_.FullName }
+# update anytime:  cd "$HOME\.claude\truestack"; git pull
+```
+Either way, merge the `truestack/.mcp.example.json` entries you need into your project `.mcp.json`.
+
+**Drop-in, one-time copy (simplest; re-copy after each `git pull`):**
 ```sh
 git clone <your-fork-url> truestack
 cp -r truestack/skills/*   ~/.claude/skills/      # the 21 truestack-* skills
 cp -r truestack/commands/* ~/.claude/commands/    # the 8 /truestack-* slash commands
-# then merge truestack/.mcp.example.json entries you need into your project .mcp.json
 ```
 
 **As a plugin via marketplace (double-prefixes the names — see note above):**
