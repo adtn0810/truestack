@@ -1,0 +1,11 @@
+{
+  "name": "truestack",
+  "owner": { "name": "adtn" },
+  "plugins": [
+    {
+      "name": "truestack",
+      "source": "./",
+      "description": "Honesty-first coding skill set fronted by an orchestrate router: backend, React frontend, debugging, quality-control, repo-memory, multi-agent coordination, MCP integration, deep research, scheduling, and skill self-evaluation."
+    }
+  ]
+}

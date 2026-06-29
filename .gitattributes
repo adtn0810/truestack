@@ -1,0 +1,7 @@
+# Normalize line endings: store LF in the repo and check out LF on every OS,
+# so SKILL.md / YAML / Python stay byte-stable across Windows, macOS, and Linux.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.zip binary

@@ -1,0 +1,124 @@
+# truestack
+
+A lightweight, **honesty-first** coding skill set for Claude Code — packaged as a **plugin**
+that bundles 21 skills, 8 slash commands, and an MCP integration layer, all behind a single
+**`orchestrate`** router that reads the request, right-sizes it, and dispatches to the right
+skill in the right order. Language-aware backend skills (Express · .NET · Python), a pro React
+frontend skill, multi-agent / multi-session coordination, an always-on honesty contract,
+committed repo-memory, verified deep research, scheduling, and **real tool integrations** —
+with process that sizes itself to the work.
+
+**Highlights:**
+- **`orchestrate` router** — classifies any request, right-sizes it, runs the canonical chain, and gates everything through `quality-control`; routes to the best skill even when it lives in another installed set.
+- **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (54-case tested), plus an append-only MCP audit log.
+- **Honesty, machine-checked** — an always-on grounding contract, a code↔memory reconciliation tally, and auto-research of current-fact decisions from authoritative sources.
+- **Full lifecycle** — plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation.
+- **Self-measuring** — ships its own deterministic skill lint + a behavioral routing eval, both run in CI.
+
+## The skills (21)
+
+| Skill | Fires on | Job |
+|---|---|---|
+| `orchestrate` | **first, on any non-trivial request** | front-door router: ground → right-size → route to the right skill(s) → run the canonical chain → gate through `quality-control` |
+| `project-memory` | first task / "remember" / stale facts | study the repo, maintain committed memory + the always-on contracts (honesty, communication, clarify, boundaries, tool-use) |
+| `architecture-planning` | designing/scoping new work | right-size → clarify (loops) → architecture → testable criteria → tasks (parallel vs sequential) → gate risk |
+| `backend-development` | implementing backend | match/recommend stack (Express · .NET · Python) → accurate, load-safe code; **build loop** to acceptance, or an honest score |
+| `react-frontend` | building/reshaping React UI | distinctive design **and** sound React engineering (arch, state, perf, a11y, browser + visual QA) |
+| `root-cause-debugging` | a bug/error/regression | reproduce → confirm root cause → permanent fix → **verify-or-loop** until proven fixed |
+| `quality-control` | after any change | tests (+property) · types/lint · 6-axis review · load/perf · safety (OWASP) · intent check |
+| `agent-coordination` | parallel agents / research fan-out / continuing a session | decompose → worktree isolation → shared task ledger → merge protocol |
+| `mcp-integration` | a task needs live data or a real external action | use connected MCP tools with accuracy/security/honesty discipline; configure `.mcp.json` |
+| `database-migrations` | schema/data change · migration · backfill (high-risk) | expand/contract · zero-downtime DDL · reversible up/down · idempotent batched backfills |
+| `deploy-and-runtime` | deploy/run on a VPS · "my deploy causes downtime" | Docker · nginx · TLS · systemd · SIGTERM drain · blue-green + instant rollback |
+| `ci-and-delivery` | CI/CD · GitHub Actions · release · "ship it" | pipeline gates · SHA-pinned actions · required checks · semver release · health-gated deploy |
+| `observability` | logging/metrics/tracing · SLOs · "no telemetry yet" | structured logs · OTel metrics/traces · RED/USE · burn-rate alerts · bounded on one box |
+| `application-security` | "is this secure" · auth · access control · OWASP · injection · secrets | authn/authz (deny-by-default, IDOR/BOLA) · OWASP Top 10 · structural injection prevention · Argon2id · CSRF/SSRF · STRIDE |
+| `api-design` | API contract · REST/GraphQL/gRPC · versioning · pagination · idempotency | contract-first · RFC 9457 errors · cursor pagination · idempotency keys · OpenAPI/contract tests |
+| `dependency-management` | add/pin a dependency · CVE/SBOM/license · "is this package safe" | lockfile/pinning · Renovate cooldown · CVE/GHSA triage · SBOM · license · typosquat/SLSA |
+| `data-privacy` | PII · GDPR/CCPA · right-to-erasure · retention · consent | PII inventory/classification · retention + erasure · consent · audit logging · breach readiness |
+| `deep-research` | "research / compare / what's best/latest" | parallel search → primary sources → adversarial verification → cited answer + confidence |
+| `reverse-engineering` | shared code/reference · "how does this work" · "adopt this" · upgrade from a reference | verified model (verified vs inferred) → transferable idea → gated, license-aware upgrade path |
+| `task-scheduling` | "every day / weekly / remind me / run at" | self-contained job spec (trigger · run prompt · delivery · failure policy) wired to the host scheduler |
+| `skill-evaluation` | "score / rate / audit / improve" a skill | static lint + judge + behavioral trigger test → scorecard with fixes; its own quality gate |
+
+## Slash commands (8)
+
+| Command | Does | Routes to |
+|---|---|---|
+| `/verify [scope]` | full QC sweep + verdict | `quality-control` |
+| `/loop <target>` | iterate to proven-done, or honest score | `backend-development` / `root-cause-debugging` |
+| `/simplify [target]` | maintainability simplify pass, behavior unchanged | `quality-control` |
+| `/run [tests\|build\|lint\|all]` | run the stack's checks, report in a table | `quality-control` tooling |
+| `/deep-research <question>` | verified, cited multi-source answer | `deep-research` |
+| `/schedule <what> <when>` | set up a recurring/deferred run | `task-scheduling` |
+| `/onboard [focus]` | study repo + build committed memory | `project-memory` |
+| `/eval [target]` | score/audit skills — lint + judge + trigger test | `skill-evaluation` |
+
+`/onboard` is intentionally **not** `/init` (that name is a built-in Claude Code command).
+
+## Integrations (MCP) — guidance that can finally *act*
+`mcp-integration` turns the set from advice into action through connected MCP servers, while
+keeping the discipline: **discover before you assume**, treat tool output as **untrusted data**,
+**read freely / write carefully**, and keep **money, destructive ops, schema changes, and
+outbound sends Ask-first**. Idempotency on retried writes; verify the real effect afterward. Every Ask-first call also leaves an **approval receipt + append-only audit row** (`.ai/agents/mcp-audit.md`) so external effects are reviewable like code.
+Servers are declared in a committed, **secret-free** `.mcp.json` (env-var expansion `${VAR}`);
+this ships with an empty `.mcp.json` plus a `.mcp.example.json` template — connect only what a
+project needs. Full schema + per-category checklist (DB · vector · payments · webhooks · search)
+in `skills/mcp-integration/references/mcp-config.md`.
+
+## Honesty & anti-hallucination (always-on)
+Seeded into `CLAUDE.md` so it applies to every reply, with the full contract in
+`skills/project-memory/references/honesty.md`. In impact order: **ground, don't recall**;
+**abstain** when evidence is thin; **verify** consequential claims before finalizing; **truth
+over agreement**; separate verified / inferred / unknown; never fabricate paths, APIs, or
+numbers. Hallucination is structural — the contract makes it rare and always flagged, not "solved."
+
+## Multi-agent & multi-session (no overwrite, no collapse)
+`agent-coordination` separates **isolation** (each writing agent in its own git worktree + branch)
+from **coordination** (shared contracts up front, a task ledger where each agent writes only its
+own row, non-overlapping scope, defined merge order). Memory writes are append-or-section; a
+later session resumes from committed memory + the ledger + status files. Caps at 2–3 agents to start.
+
+## Language-aware backend & pro React frontend
+`backend-development`/`quality-control` adapt to the project's language — stack idioms live in
+`backend-development`'s `references/stacks.md`, and the OWASP-aligned security checklist for
+**Express.js · .NET · Python** lives in `quality-control`'s `references/security.md`.
+`react-frontend` holds two bars at once — anti-AI-slop visual design and the engineering a
+design-only skill skips (architecture, state/data, React 19, Core Web Vitals, a11y, testing).
+
+## How they chain
+- Entry point: `orchestrate` reads the request, right-sizes it, and dispatches into one of the chains below (skip it for a trivial one-off).
+- Backend: `architecture-planning` → `backend-development` → `quality-control`
+- Frontend: `architecture-planning` → `react-frontend` → `quality-control`
+- External effects: `backend-development` → `mcp-integration` → `quality-control`
+- Parallel: `architecture-planning` → `agent-coordination` → (workers run `backend-development`/`react-frontend`) → `quality-control`
+- Fixes: `root-cause-debugging` → `quality-control`
+- Research / recurring: `deep-research` (← `agent-coordination` fan-out); wrap with `task-scheduling` to recur
+- All read project memory first; `project-memory` owns it.
+
+## Install
+
+This repo is itself a valid Claude Code plugin (`.claude-plugin/plugin.json` +
+`marketplace.json`, `skills/`, `commands/`, `.mcp.json`). Pick one method:
+
+**As a plugin via marketplace (recommended):**
+```sh
+git clone <your-fork-url> truestack
+```
+Then, in Claude Code:
+```text
+/plugin marketplace add ./truestack
+/plugin install truestack@truestack
+```
+
+**Manual (drop-in):**
+```sh
+git clone <your-fork-url> truestack
+cp -r truestack/skills/*   ~/.claude/skills/      # the 21 skills
+cp -r truestack/commands/* ~/.claude/commands/    # the 8 slash commands
+# then merge truestack/.mcp.example.json entries you need into your project .mcp.json
+```
+
+Validate the bundle anytime with `claude plugin validate .`. Claude Code auto-detects skills and
+commands — no restart. Configure `.mcp.json` with your own servers (secrets via env vars) before
+using `mcp-integration`.

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(mkfs *)"
+    ],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(git clean *)",
+      "Bash(git push --force *)",
+      "Bash(truncate *)",
+      "Bash(docker volume rm *)",
+      "Bash(kubectl delete *)",
+      "Bash(terraform destroy *)",
+      "mcp__*__delete-many",
+      "mcp__*__update-many",
+      "mcp__*__insert-many",
+      "mcp__*__drop-collection",
+      "mcp__*__create-collection",
+      "mcp__*__create-index",
+      "mcp__*__rename-collection"
+    ]
+  }
+}

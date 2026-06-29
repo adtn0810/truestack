@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  skill-lint:
+    runs-on: ubuntu-latest
+    steps:
+      # TODO (supply-chain hardening): pin these actions to a commit SHA.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Skill lint (gates on any Critical finding via exit code)
+        run: python skills/skill-evaluation/scripts/skill_lint.py skills
+      - name: Lint unit tests (golden fixtures)
+        run: python skills/skill-evaluation/scripts/test_skill_lint.py
+
+  gate-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: PreToolUse gate tests (54 cases)
+        run: node hooks/test-gate.mjs
+      - name: Behavioral trigger eval (routing regression guard)
+        run: node skills/skill-evaluation/scripts/trigger_eval.mjs
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2  # TODO: pin to a commit SHA
+
+  plugin-validate:
+    runs-on: ubuntu-latest
+    # Informational until the Claude CLI is wired for headless CI; does not block merges yet.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate plugin manifest
+        run: claude plugin validate .

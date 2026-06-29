@@ -1,0 +1,22 @@
+# Secrets / local MCP overrides — NEVER commit real tokens.
+# Note: .mcp.json itself is intentionally committed (secret-free, ${VAR} expansion).
+.env
+.env.*
+.mcp.local.json
+*.secret.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Python (the lint script + its tests)
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Build artifacts
+*.zip
+dist/

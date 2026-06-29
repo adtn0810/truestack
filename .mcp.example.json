@@ -1,0 +1,27 @@
+{
+  "_comment": "Template only — copy the servers you need into .mcp.json. Secrets stay in env vars (${VAR}); never commit real tokens. PIN every package to an exact version (pkg@1.2.3), never a bare 'npx -y pkg' (supply-chain, OWASP LLM03). See skills/mcp-integration/references/mcp-config.md.",
+  "mcpServers": {
+    "db": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "<your-database-mcp-server>@<exact-version>"],
+      "env": { "DATABASE_URL": "${DATABASE_URL}" }
+    },
+    "vectors": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "<your-vector-store-mcp-server>@<exact-version>"],
+      "env": { "VECTOR_URL": "${VECTOR_URL}", "VECTOR_API_KEY": "${VECTOR_API_KEY}" }
+    },
+    "payments": {
+      "type": "http",
+      "url": "https://<your-payments-mcp-endpoint>/mcp",
+      "headers": { "Authorization": "Bearer ${PAYMENTS_TOKEN}" }
+    },
+    "webhooks": {
+      "type": "http",
+      "url": "https://<your-webhook-mcp-endpoint>/mcp",
+      "headers": { "Authorization": "Bearer ${WEBHOOKS_TOKEN}" }
+    }
+  }
+}
