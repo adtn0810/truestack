@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // truestack PreToolUse gate — enforces the Ask-first boundary (money / destructive /
-// schema / outbound) that the mcp-integration + project-memory skills describe as guidance.
+// schema / outbound) that the truestack-mcp-integration + truestack-project-memory skills describe as guidance.
 //
 // Registered via hooks/hooks.json (matcher "*", so it sees EVERY tool call). Claude Code
 // pipes a PreToolUse JSON object on stdin; we answer with exit 0 + JSON on stdout:

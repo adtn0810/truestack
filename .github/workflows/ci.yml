@@ -17,9 +17,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Skill lint (gates on any Critical finding via exit code)
-        run: python skills/skill-evaluation/scripts/skill_lint.py skills
+        run: python skills/truestack-skill-evaluation/scripts/skill_lint.py skills
       - name: Lint unit tests (golden fixtures)
-        run: python skills/skill-evaluation/scripts/test_skill_lint.py
+        run: python skills/truestack-skill-evaluation/scripts/test_skill_lint.py
 
   gate-tests:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
       - name: PreToolUse gate tests (54 cases)
         run: node hooks/test-gate.mjs
       - name: Behavioral trigger eval (routing regression guard)
-        run: node skills/skill-evaluation/scripts/trigger_eval.mjs
+        run: node skills/truestack-skill-evaluation/scripts/trigger_eval.mjs
 
   secret-scan:
     runs-on: ubuntu-latest

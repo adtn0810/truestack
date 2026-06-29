@@ -1,5 +1,5 @@
 {
-  "_comment": "Template only — copy the servers you need into .mcp.json. Secrets stay in env vars (${VAR}); never commit real tokens. PIN every package to an exact version (pkg@1.2.3), never a bare 'npx -y pkg' (supply-chain, OWASP LLM03). See skills/mcp-integration/references/mcp-config.md.",
+  "_comment": "Template only — copy the servers you need into .mcp.json. Secrets stay in env vars (${VAR}); never commit real tokens. PIN every package to an exact version (pkg@1.2.3), never a bare 'npx -y pkg' (supply-chain, OWASP LLM03). See skills/truestack-mcp-integration/references/mcp-config.md.",
   "mcpServers": {
     "db": {
       "type": "stdio",

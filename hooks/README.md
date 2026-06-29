@@ -30,7 +30,7 @@ payment.ts`, `grep -r delete`, and a read-only `aggregate` are *not* gated.
 
 ## What is intentionally **not** gated (deferred)
 - **Edit / Write / MultiEdit / NotebookEdit** — writing text into a file is not executing it; the destructive act is caught where it *runs* (shell/MCP). Your normal edit-permission flow still applies.
-- **WebFetch and reads** — deferred to the normal flow. (Outbound *exfiltration* via WebFetch is out of scope for this structural gate; the untrusted-data boundary in `mcp-integration` covers the injection side.)
+- **WebFetch and reads** — deferred to the normal flow. (Outbound *exfiltration* via WebFetch is out of scope for this structural gate; the untrusted-data boundary in `truestack-mcp-integration` covers the injection side.)
 
 This is a guardrail, **not a sandbox**: it stops the obvious-and-catastrophic and forces a human
 yes on write-class effects. It does not make a compromised host safe.
