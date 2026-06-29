@@ -99,9 +99,23 @@ design-only skill skips (architecture, state/data, React 19, Core Web Vitals, a1
 ## Install
 
 This repo is itself a valid Claude Code plugin (`.claude-plugin/plugin.json` +
-`marketplace.json`, `skills/`, `commands/`, `.mcp.json`). Pick one method:
+`marketplace.json`, `skills/`, `commands/`, `.mcp.json`). Pick one method.
 
-**As a plugin via marketplace (recommended):**
+> **Names are already namespaced.** Every skill and command carries a `truestack-` prefix
+> (`truestack-orchestrate`, `/truestack-verify`, …) so they never collide with other installed
+> sets. This means **drop-in is the recommended install** — it keeps those flat names as-is.
+> Plugin-marketplace install *also* namespaces by plugin id, so it would double up to
+> `truestack:truestack-orchestrate`; use it only if you prefer plugin-managed updates.
+
+**Manual (drop-in) — recommended:**
+```sh
+git clone <your-fork-url> truestack
+cp -r truestack/skills/*   ~/.claude/skills/      # the 21 truestack-* skills
+cp -r truestack/commands/* ~/.claude/commands/    # the 8 /truestack-* slash commands
+# then merge truestack/.mcp.example.json entries you need into your project .mcp.json
+```
+
+**As a plugin via marketplace (double-prefixes the names — see note above):**
 ```sh
 git clone <your-fork-url> truestack
 ```
@@ -109,14 +123,6 @@ Then, in Claude Code:
 ```text
 /plugin marketplace add ./truestack
 /plugin install truestack@truestack
-```
-
-**Manual (drop-in):**
-```sh
-git clone <your-fork-url> truestack
-cp -r truestack/skills/*   ~/.claude/skills/      # the 21 skills
-cp -r truestack/commands/* ~/.claude/commands/    # the 8 slash commands
-# then merge truestack/.mcp.example.json entries you need into your project .mcp.json
 ```
 
 Validate the bundle anytime with `claude plugin validate .`. Claude Code auto-detects skills and
