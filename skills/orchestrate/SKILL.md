@@ -2,7 +2,7 @@
 name: orchestrate
 description: Front-door router for this skill set — read FIRST on any non-trivial coding
   request, then dispatch to the right skill(s) in the right order. Use whenever a request
-  spans more than one step or you're unsure which skill fits: building, fixing, planning,
+  spans more than one step or you're unsure which skill fits — building, fixing, planning,
   reviewing, researching, scheduling, or acting on an external system. Right-sizes the work,
   carries the read-memory-first / honesty / clarify contracts into each step, chooses
   single-agent vs parallel, runs the canonical chains end to end, and gates everything

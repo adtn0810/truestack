@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2] - 2026-06-29
+
+### Fixed
+- `orchestrate`'s description failed to parse in Claude Code's skill loader: an unquoted
+  multi-line YAML description contained a `": "` (colon-space), which a strict YAML parser reads
+  as a key/value split, so the router loaded with no description and wouldn't trigger reliably.
+  Rephrased the colon to a dash. Scanned all descriptions — no other skill was affected. (The
+  deterministic lint's lenient regex missed it; the real YAML parser didn't.)
+
 ## [0.0.1] - 2026-06-29
 
 Initial public release. A lightweight, **honesty-first** coding skill set for Claude Code — 21

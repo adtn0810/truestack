@@ -1,6 +1,6 @@
 {
   "name": "truestack",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lightweight, honesty-first coding skill set for Claude Code, fronted by an orchestrate router: language-aware backend (Express/.NET/Python), pro React frontend, root-cause debugging, quality-control, committed repo-memory, multi-agent coordination, MCP tool integrations with governance, deep research, scheduling, deploy/CI-CD/observability/database-migrations, an enforced PreToolUse governance hook, and a self-evaluation skill — plus slash commands. Tuned for solo, self-hosted work.",
   "author": { "name": "adtn" },
   "license": "MIT",
