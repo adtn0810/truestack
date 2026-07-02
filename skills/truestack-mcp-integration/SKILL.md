@@ -2,9 +2,10 @@
 name: truestack-mcp-integration
 description: Act on external systems through connected MCP servers — query or write a
   database, search a vector store, call a payment or webhook API, hit a third-party
-  service — instead of only advising about them. Use whenever a task needs live data or
-  a real external action a connected tool can perform, or when setting up / configuring
-  MCP servers (.mcp.json) for a project. Applies the same accuracy, security, and honesty
+  service — instead of only advising about them. Use whenever a task needs live data or a
+  real external action performed through a connected MCP server (a more specific vendor
+  skill that matches the tool takes precedence), or when setting up / configuring MCP
+  servers (.mcp.json) for a project. Applies the same accuracy, security, and honesty
   discipline to tool calls as truestack-backend-development applies to code.
 ---
 

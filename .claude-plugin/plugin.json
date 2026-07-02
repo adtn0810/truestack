@@ -1,7 +1,7 @@
 {
   "name": "truestack",
-  "version": "0.0.2",
-  "description": "Lightweight, honesty-first coding skill set for Claude Code, fronted by an orchestrate router: language-aware backend (Express/.NET/Python), pro React frontend, root-cause debugging, quality-control, committed repo-memory, multi-agent coordination, MCP tool integrations with governance, deep research, scheduling, deploy/CI-CD/observability/database-migrations, an enforced PreToolUse governance hook, and a self-evaluation skill — plus slash commands. Tuned for solo, self-hosted work.",
+  "version": "0.0.3",
+  "description": "Honesty-first coding skill set for Claude Code: 21 skills behind a truestack-orchestrate router, an enforced PreToolUse governance gate, committed repo-memory, and self-evaluation — tuned for solo, self-hosted work.",
   "author": { "name": "adtn" },
   "license": "MIT",
   "keywords": ["skills", "orchestrator", "backend", "react", "mcp", "quality-control", "memory", "multi-agent", "research", "self-hosted", "deploy", "ci-cd", "observability", "database-migrations", "skill-evaluation"]

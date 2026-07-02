@@ -9,7 +9,7 @@ step in `truestack-backend-development` is only for new/greenfield work. Then ap
 **Data accuracy**
 - Validate every body/params/query with zod or Joi at the boundary; trust nothing.
 - Wrap multi-step writes in a transaction (`pg` `BEGIN/COMMIT`, Prisma `$transaction`).
-- One central error-handling middleware; use `express-async-errors` (or wrap handlers) so async throws aren't swallowed.
+- One central error-handling middleware. Express 5 forwards rejected async handlers to it natively; `express-async-errors` / hand-wrapping is only needed on Express 4 — check the installed major before adding it.
 **Performance & anti-overload (self-hosted)**
 - Never block the event loop — push CPU-heavy work to a worker thread or a queue.
 - `pg` Pool with `max` tuned below Postgres `max_connections`; never a client per request.
@@ -32,7 +32,7 @@ step in `truestack-backend-development` is only for new/greenfield work. Then ap
 - Structured logging (Serilog).
 
 ## Python
-**Defaults**: FastAPI (async) + uvicorn behind gunicorn; SQLAlchemy (async) or Django ORM; Postgres.
+**Defaults**: FastAPI (async) on uvicorn with `--workers` (current default; gunicorn-managing-uvicorn-workers is the legacy pattern); SQLAlchemy (async) or Django ORM; Postgres.
 **Data accuracy**
 - Validate and parse with Pydantic models at the boundary.
 - Use a transaction / `session.begin()` for multi-step writes; idempotency for retries.
@@ -40,5 +40,5 @@ step in `truestack-backend-development` is only for new/greenfield work. Then ap
 **Performance & anti-overload (self-hosted)**
 - Don't block the event loop in async code — run blocking/CPU work in a thread/process pool or a task queue (Celery/RQ).
 - SQLAlchemy: pool sized to the box; avoid N+1 with `selectinload`/`joinedload`; stream large queries with `yield_per`.
-- gunicorn with a bounded worker/thread count matched to CPU; uvicorn workers behind it.
+- Bound the worker count to the CPU (`uvicorn --workers N`, or gunicorn with uvicorn workers on legacy setups).
 - Cache (Redis, or `functools.lru_cache` for pure functions); rate-limit (slowapi); cap request size.

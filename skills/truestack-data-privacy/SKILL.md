@@ -1,6 +1,6 @@
 ---
 name: truestack-data-privacy
-description: Owns the truestack-data-privacy and compliance policy for a self-hosted app — PII
+description: Owns the data-privacy and compliance policy for a self-hosted app — PII
   inventory / data classification / mapping, data minimization, retention and deletion (GDPR
   right-to-erasure, scheduled purge), lawful basis / consent, pseudonymization,
   encryption-at-rest, access / audit logging of personal data, and 72-hour breach readiness.
@@ -9,9 +9,9 @@ description: Owns the truestack-data-privacy and compliance policy for a self-ho
   "data inventory / classification / mapping", "retention / scheduled purge / auto-delete old
   data", "lawful basis / consent / opt-out / Global Privacy Control", "pseudonymization /
   anonymization / de-identification", "encryption at rest / crypto-shredding", "audit / access
-  log / who accessed this data", "breach notification / 72 hours", "redact / scrub PII from
-  logs", "suppression list / delete from backups", or "is this compliant / store sensitive
-  data".
+  log / who accessed this data", "breach notification / 72 hours", "define what counts as
+  PII in logs / telemetry", "suppression list / delete from backups", or "is this compliant /
+  store sensitive data".
 ---
 
 # truestack-data-privacy
@@ -49,9 +49,10 @@ authors the purge/erasure DDL + bounded backfill) but `truestack-api-design` own
 `truestack-architecture-planning` does system design.
 
 ## 1. Make the PII inventory the source of truth — derive it from the schema
-A spreadsheet drifts from the DB the day it's written; the EDPB's CEF 2026 erasure report
-named *lack of internal procedures* and *difficulty determining retention periods* the top
-recurring failures. On one server, **derive the inventory from the schema** so it cannot lie:
+A spreadsheet drifts from the DB the day it's written; the EDPB's coordinated erasure
+enforcement work has repeatedly named *lack of internal procedures* and *difficulty
+determining retention periods* as top recurring failures (verify the current report before
+citing it). On one server, **derive the inventory from the schema** so it cannot lie:
 tag every personal-data field at the column level — via column comments or a
 `data_classification` registry the code reads — with `{data class, lawful basis, purpose,
 retention clock, deletion method}`. An untagged column holding personal data is a finding.
@@ -76,11 +77,11 @@ the subject in an **append-only suppression/erasure list** and **re-apply it on 
 restore** before the data is usable — so an erased subject can't silently resurrect. Backups
 may persist until overwritten but must be put "beyond use"; document the rotation window to
 the subject. When you **refuse** erasure under an Art. 17(3) exception, write a case-by-case
-justification (an EDPB CEF 2026 expectation).
+justification (an EDPB coordinated-enforcement expectation).
 
 ## 5. Pseudonymization is NOT anonymization and NOT erasure
 Pseudonymized data is **still personal data** (GDPR Art. 4(5) / Recital 26); only irreversible
-anonymization exits GDPR scope. The EDPB CEF 2026 report calls out controllers "substituting
+anonymization exits GDPR scope. EDPB enforcement reviews call out controllers "substituting
 pseudonymization or partial masking for true anonymization" — don't. Treat reversible
 tokenization/masking as a **security control**, never as a way to dodge a deletion request,
 and keep the re-identification key in a **separate keystore** from the pseudonymized data —
@@ -112,7 +113,8 @@ Don't bury consent in a boolean. Store `{purpose, basis, notice/policy version s
 timestamp, source}` so you can **prove** it, and so withdrawing consent (GDPR Art. 7(3))
 triggers the **same purge pipeline** as erasure. CCPA/CPRA differs: it's opt-**out** of
 sale/share, plus "Limit the Use of My Sensitive Personal Information", and you must honor the
-**Global Privacy Control** signal (CCPA regs effective 1 Jan 2026).
+**Global Privacy Control** signal — a long-standing CPRA requirement, not a new obligation
+(verify the current reg text rather than dating it from memory).
 
 ## 10. Build the 72-hour breach machinery before you need it
 A written runbook with a **named decision-maker**, a severity method (the ENISA methodology
@@ -128,9 +130,11 @@ CSF). And **attest deletion completed** — a deletion receipt / log entry, not 
 "We ran a job" is not evidence.
 
 ## Honest exit
-State which regimes you confirmed apply, which controls exist vs. are missing, and which
-compliance claims you grounded vs. couldn't verify — never assert "compliant" off an
-unexercised policy (honesty contract). A defensible "GDPR erasure path works; CCPA GPC
+This skill produces engineering guidance, **not legal advice** — lawful-basis determinations,
+Art. 17(3) refusals, and breach-notification calls need qualified counsel or a DPO; say so
+when one is in play. State which regimes you confirmed apply, which controls exist vs. are
+missing, and which compliance claims you grounded vs. couldn't verify — never assert
+"compliant" off an unexercised policy (honesty contract). A defensible "GDPR erasure path works; CCPA GPC
 handling is still a gap" beats a false all-green. Update project memory when a data class,
 retention rule, or basis changes; then hand off to **truestack-quality-control** before "done".
 

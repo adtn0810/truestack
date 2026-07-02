@@ -69,6 +69,35 @@ const cases = [
   ["ask: mcp send_email", mcp("mcp__notify__send_email"), "ask"],
   ["ask: mcp aggregate with $out", mcp("mcp__plugin_mongodb_mongodb__aggregate", { pipeline: [{ $out: "copy" }] }), "ask"],
 
+  // ── bypass-hardening regressions (2026-07 audit) → ask ──
+  ["ask: find -delete", bash("find . -name '*.log' -delete"), "ask"],
+  ["ask: rsync --delete", bash("rsync -a --delete build/ deploy/"), "ask"],
+  ["ask: psql TRUNCATE without 'table'", bash('psql -c "TRUNCATE users"'), "ask"],
+  ["ask: mysql DELETE FROM", bash('mysql -e "DELETE FROM orders WHERE 1=1"'), "ask"],
+  ["ask: powershell -EncodedCommand", bash("powershell -EncodedCommand SQBFAFgAIAB3AGgAbwBhAG0AaQA="), "ask"],
+  ["ask: powershell.exe -enc", bash("powershell.exe -enc SQBFAFgA"), "ask"],
+  ["ask: node -e rmSync", bash("node -e \"require('fs').rmSync('build',{recursive:true})\""), "ask"],
+  ["ask: python -c rmtree", bash("python -c \"import shutil; shutil.rmtree('data')\""), "ask"],
+  ["ask: aws rds delete-db-instance", bash("aws rds delete-db-instance --db-instance-identifier prod"), "ask"],
+  ["ask: az group delete", bash("az group delete --name prod --yes"), "ask"],
+  ["ask: gcloud instances delete", bash("gcloud compute instances delete web-1 --quiet"), "ask"],
+  ["ask: gh repo delete", bash("gh repo delete owner/repo --yes"), "ask"],
+  ["ask: mcp query carrying DELETE FROM", mcp("mcp__db__query", { sql: "DELETE FROM users WHERE active = 0" }), "ask"],
+  ["ask: mcp execute carrying DROP TABLE", mcp("mcp__db__execute", { sql: "DROP TABLE users" }), "ask"],
+
+  // ── bypass-hardening regressions → deny ──
+  ["deny: Format-Volume", pwsh("Format-Volume -DriveLetter D"), "deny"],
+  ["deny: diskpart", pwsh("diskpart /s wipe.txt"), "deny"],
+  ["deny: format drive letter", pwsh("format d: /q"), "deny"],
+
+  // ── false-positive guards (must stay defer) ──
+  ["fp: grep for truncate", bash("grep -r truncate src/"), "defer"],
+  ["fp: npm run format:check", bash("npm run format:check"), "defer"],
+  ["fp: node --require preload", bash("node --require ts-node/register app.js"), "defer"],
+  ["fp: gh pr list", bash("gh pr list --state open"), "defer"],
+  ["fp: mcp read with 'dropdown' in input", mcp("mcp__ui__find", { selector: "nav .dropdown-menu" }), "defer"],
+  ["fp: mcp read mentioning drag-and-drop", mcp("mcp__docs__search", { q: "drag-and-drop file upload" }), "defer"],
+
   // ── catastrophic → deny ──
   ["deny: rm -rf /", bash("rm -rf /"), "deny"],
   ["deny: rm -rf ~", bash("rm -rf ~"), "deny"],

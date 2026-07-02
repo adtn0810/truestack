@@ -2,15 +2,13 @@
 name: truestack-dependency-management
 description: Own the ongoing dependency and supply-chain lifecycle of a self-hosted app — pinning,
   cooldown-gated update automation, vulnerability triage, SBOMs, license policy, and supply-chain
-  risk. Use when the request is to add or install a package (npm install, pip install, dotnet add
-  package), update or bump or upgrade dependencies, set up Renovate / Dependabot / cooldown /
-  minimumReleaseAge / stabilityDays, edit a lockfile (package-lock.json, yarn.lock, pnpm-lock,
-  uv.lock, packages.lock.json), pin versions, run npm audit / pip-audit / osv-scanner / dotnet list
-  package --vulnerable, handle a CVE / GHSA / security advisory, judge if a package is safe or
-  whether to upgrade or wait, respond to a supply-chain attack / compromised package / hijacked
-  maintainer, generate an SBOM / CycloneDX / SPDX / VEX, enforce license compliance / GPL / AGPL /
-  copyleft, or address typosquatting / dependency confusion / scoped namespace / install scripts /
-  postinstall / provenance / SLSA / trusted publishing / transitive deps.
+  risk. Use when the request is to add a package as a new project dependency (not an incidental
+  setup/CI step), update / bump / upgrade / pin dependencies, edit a lockfile, set up Renovate /
+  Dependabot / cooldown / minimumReleaseAge, run npm audit / pip-audit / osv-scanner, handle a
+  CVE / GHSA / security advisory, judge "is this package safe / upgrade or wait", respond to a
+  supply-chain attack / compromised package / hijacked maintainer, generate an SBOM / CycloneDX /
+  SPDX / VEX, enforce license compliance / copyleft, or address typosquatting / dependency
+  confusion / install scripts / provenance / SLSA / transitive deps.
 ---
 
 # truestack-dependency-management
@@ -48,9 +46,9 @@ license/SBOM. **`truestack-backend-development`** justifies *why* a dep is neede
 governs *whether and how* it enters and stays.
 
 ## 1. Cooldown — the highest-leverage, most-skipped control
-The dominant 2025–26 attack is a hijacked-maintainer release the registry pulls within ~4–5 hours
-of report (Aug 2025 nx/chalk; 2026 axios). A maturity gate that quarantines fresh releases
-neutralizes the whole class.
+The dominant recent attack is a hijacked-maintainer release the registry pulls within hours of
+report (the 2025 nx and chalk/debug hijacks are the canonical examples — auto-research current
+ones before citing). A maturity gate that quarantines fresh releases neutralizes the whole class.
 - Set Renovate **`minimumReleaseAge`** (formerly `stabilityDays`) or Dependabot **`cooldown`** to
   **3–7 days** (Mend's best-practices preset now defaults npm to 3 days, opt-out). Longer for major,
   shorter for patch.
@@ -76,7 +74,7 @@ time, before any code is imported. On a single box with no isolation this is dou
 ## 4. Scan polyglot-first, then ecosystem-deep — always include transitives
 For a multi-stack box, ecosystem-native tools each see only their own world.
 - **`osv-scanner`** is the backbone: it reads npm/PyPI/NuGet/Go/Maven lockfiles against the unified
-  OSV database in one pass and is the only OSS tool with guided remediation. Run it in CI for
+  OSV database in one pass, with guided remediation few other OSS tools offer. Run it in CI for
   breadth.
 - Layer ecosystem depth: **`npm audit --audit-level=high`**, **`pip-audit`**,
   **`dotnet list package --vulnerable --include-transitive`**. The `--include-transitive` flag is
@@ -116,7 +114,7 @@ moment a wrong name is typed). Pair them correctly:
 - **Typosquat** → name-similarity heuristics / managed ingestion **at add-time** — no cryptographic
   check helps once the bad name is in the lockfile.
 - Adopt **npm Trusted Publishing** (OIDC, no long-lived tokens) for anything you publish — but treat
-  provenance as necessary-not-sufficient (the axios bypass).
+  provenance as necessary-not-sufficient (bypasses have been demonstrated).
 
 ## 9. Map controls to the standards so the policy is auditable, not vibes
 Name the anchor for each control: lockfile + provenance verify → **PS.2 / PS.3** (read against

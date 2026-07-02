@@ -1,6 +1,6 @@
 ---
 name: truestack-quality-control
-description: Run a deep truestack-quality-control sweep after ANY code change before the work is
+description: Run a deep quality-control sweep after ANY code change before the work is
   considered done. Use automatically after implementing a feature or fixing a bug, and
   whenever the user asks to "check", "QC", "verify", or "make sure it's solid". Runs
   tests, type-check and lint, a multi-axis review, a load/perf check, a safety pass, and
@@ -9,14 +9,17 @@ description: Run a deep truestack-quality-control sweep after ANY code change be
 
 # truestack-quality-control
 
-The gate between "I wrote it" and "it's done". Run every layer; a partial pass is a fail.
+The gate between "I wrote it" and "it's done". **Right-size the sweep to the diff**: for a
+trivial, output-neutral change (rename, comment, copy tweak) run tests + types/lint + intent
+and *declare that scope in the report*; for anything touching logic, data, dependencies, or
+boundaries, run every layer — a partial pass without that declaration is a fail.
 First, read the intent (task, acceptance criteria, plan) and project memory (`CLAUDE.md` +
 `.ai/memory/`) so you're judging against the real goal, not a guess. Tooling is
 per-language — **see `references/tooling.md`** for the test / type-check / lint / perf /
 security tools for Node, .NET, and Python.
 
 ## 1. Tests (review tests first)
-Detect the framework (jest/vitest, pytest, `go test`) and run the suite. Before trusting
+Detect the framework (jest/vitest, pytest, `dotnet test`) and run the suite. Before trusting
 them, check the tests themselves: do they exercise behavior through public interfaces, and
 would they actually fail if the feature regressed? If changed code has no tests, write them
 — happy path plus the edge cases the change touches. For data-accuracy-critical logic, add
@@ -25,7 +28,7 @@ just example cases — "all tests passed" is not the same as "matches intent". A
 skipped, weakened, or deleted is a finding.
 
 ## 2. Type-check + lint
-Run the type checker (tsc/mypy/`go vet`) and linter (eslint/ruff). Fix violations at the
+Run the type checker (tsc/mypy/.NET analyzers) and linter (eslint/ruff). Fix violations at the
 source — **never suppress** a warning to make it pass; a suppression is a deferred bug.
 
 ## 3. Review across six axes

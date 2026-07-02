@@ -3,7 +3,7 @@ name: truestack-project-memory
 description: Build and maintain persistent, repo-local memory of a codebase so the other
   skills stop re-discovering the same facts. Use this on the FIRST substantial task in any
   repo (study the project before doing the work), whenever project facts seem missing or
-  stale, and whenever the user says "remember", "set up", or onboards a new project. Creates
+  stale, and whenever the user says "remember", "set up the project", or onboards a new project. Creates
   and updates a committed memory folder the other skills read first.
 ---
 

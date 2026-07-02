@@ -42,7 +42,8 @@ The phase boundary is your safe checkpoint: if anything looks wrong you **pause 
 on the prior phase** instead of rolling back under fire.
 
 ## 2. Lock + timeout discipline (the single most-missed safeguard)
-Before any DDL, set a short timeout and retry — even seasoned DBAs skip this:
+Before any DDL, set a short timeout and retry — even seasoned DBAs skip this (SQL below is
+Postgres; map per engine — MySQL uses `lock_wait_timeout`):
 ```sql
 SET lock_timeout = '2s'; SET statement_timeout = '...'; <DDL>;
 ```
@@ -101,8 +102,8 @@ old column. So:
   switch + drop-old.
 
 ## On this single server
-The trigger-based online-DDL tools (gh-ost, pt-online-schema-change) assume replication and a
-place to shift load — usually **not** your path here. Your toolkit is native transactional DDL
+The MySQL online-DDL tools (trigger-based pt-online-schema-change, binlog-based gh-ost) are
+built for fleets with replicas and load headroom — usually **not** your path here. Your toolkit is native transactional DDL
 + expand/contract + throttled batched backfills, all on the one box that also serves users.
 So: schedule heavy backfills for low-traffic windows; keep **disk headroom** (rewrites and
 `CONCURRENTLY` temporarily duplicate the table/index — a "safe" migration can still fill the

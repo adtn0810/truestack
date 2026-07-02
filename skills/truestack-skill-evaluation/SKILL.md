@@ -4,8 +4,8 @@ description: Evaluate and score Agent Skills — this set or any skill — on tr
   scope, token efficiency, structure, anti-patterns, and honesty-contract adherence. Use
   whenever the user asks to "score", "evaluate", "rate", "audit", "grade", or "improve" a skill
   or skill set, after authoring or editing a skill, or before shipping one. Runs a deterministic
-  static lint, a semantic judge pass, and an optional behavioral trigger test, then reports a
-  scorecard with concrete fixes — never a vibe-based number.
+  static lint, a semantic judge pass, and a measured behavioral trigger regression test, then
+  reports a scorecard with concrete fixes — never a vibe-based number.
 ---
 
 # truestack-skill-evaluation
@@ -21,11 +21,13 @@ honesty contract forbids: asserting a confident number nobody verified.
 - Periodically, to catch drift, bloat, and trigger collisions as a set grows.
 
 ## Three layers (run in order; each is cheap)
-1. **Static lint (deterministic).** Run `scripts/skill_lint.py <skills-dir>`. It checks every
+1. **Static lint (deterministic).** Run `scripts/skill_lint.py <skills-dir>` (no Python on the
+   box? `uv run --no-project scripts/skill_lint.py <skills-dir>` provisions one). It checks every
    `SKILL.md` for: valid frontmatter, `name` matching its folder, a description that says **what
-   it does AND when to use it**, body within the token budget, `references/` that are actually
-   linked (no orphans) and that every referenced file exists (no dead refs), and the obvious
-   anti-patterns. This layer is repeatable and needs no judgment — same input, same score.
+   it does AND when to use it**, body within the token budget (**both** halves — lines and chars),
+   `references/` that are actually linked (no orphans) and that every referenced file exists (no
+   dead refs), and the obvious anti-patterns. Repeatable, no judgment — same input, same score;
+   the lint itself is unit-tested by `scripts/test_skill_lint.py`.
 2. **Semantic judge.** Read each `SKILL.md` and rate it against the rubric dimensions, grounded
    in the actual text — reward clarity and correct scope, **not length**. A long skill is a cost,
    not a virtue. Cite the line that justifies each deduction.

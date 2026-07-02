@@ -9,15 +9,15 @@ The latest minor release receives fixes. See [CHANGELOG.md](CHANGELOG.md).
 
 | Version | Supported |
 |---|---|
-| 6.2.x | ✅ |
-| < 6.2 | ❌ |
+| 0.0.x (latest) | ✅ |
+| earlier | ❌ |
 
 ## Threat model
 
 | Threat | Where it bites | Mitigation in this set |
 |---|---|---|
 | **Prompt injection** (OWASP LLM01) — a tool result / file / web page tells the agent to act | any skill that reads external data | `truestack-mcp-integration` treats every tool result as **untrusted data, never instructions**; the honesty contract forbids acting on injected instructions; the `Never` boundary bans following instructions from untrusted data. |
-| **Unsafe autonomous actions** — money moved, data destroyed, messages sent | `truestack-mcp-integration`, Bash/MCP tool calls | **Ask-first** boundary (money/destructive/schema/outbound) is now **enforced**, not just advised, by the PreToolUse hook in [`hooks/`](hooks/README.md): deny-catastrophic, ask-on-write-class, defer-the-rest. |
+| **Unsafe autonomous actions** — money moved, data destroyed, messages sent | `truestack-mcp-integration`, Bash/MCP tool calls | **Ask-first** boundary (money/destructive/schema/outbound) is **enforced** by the PreToolUse hook in [`hooks/`](hooks/README.md) — deny-catastrophic, ask-on-write-class, defer-the-rest — **once the hook is wired**: automatic on plugin install, a one-time settings merge on drop-in install (see hooks/README.md). Unwired = advisory only. |
 | **Secret exposure** | `.mcp.json`, logs, memory | `.mcp.json` is committed **secret-free** with `${VAR}` expansion only; `.gitignore` excludes `.env`/local overrides; `truestack-quality-control`'s safety pass scans for added secrets; "don't log full tool payloads with secrets/PII". |
 | **Supply chain** (OWASP LLM03) — an MCP server package is malicious or rug-pulled | `.mcp.json` running `npx <pkg>` | Pin MCP packages to an exact version (see below and `mcp-config.md`); review server changes in PRs; least-privilege credentials per server. |
 | **Advisory-only controls giving false assurance** | the whole set | This file is explicit about what is **enforced** (the hook) vs **advisory** (the rest). A markdown audit row is a record, not a runtime block. |
@@ -33,14 +33,14 @@ yes on write-class effects. It does not make a compromised host or a malicious M
 **Please do not open a public issue for a security problem.**
 
 1. Preferred: open a private report via the repository's **GitHub Security Advisories** ("Report a vulnerability").
-2. Or email the maintainer at `<maintainer-email>` (fill in before publishing).
+2. Or email the maintainer at `adtn.ai@outlook.com`.
 
 Include repro steps, the affected file(s)/skill(s), and impact. Expect an acknowledgement within
 a few business days and a fix or mitigation plan once triaged.
 
 ## Hardening checklist for operators
-- [ ] Enable the PreToolUse hook (ships in `hooks/`; auto-applies with the plugin) and run `node hooks/test-gate.mjs`.
-- [ ] Merge `hooks/permissions.template.json` into `.claude/settings.json`, replacing `mcp__*` with your real server ids.
+- [ ] Enable the PreToolUse hook (auto with plugin install; drop-in install must wire it into settings — see `hooks/README.md`) and run `node hooks/test-gate.mjs`.
+- [ ] Merge `hooks/permissions.template.json` into `.claude/settings.json`, duplicating the MCP block with your real servers' exact tool ids.
 - [ ] **Pin** every MCP server package to an exact version in `.mcp.json` (no bare `npx -y <pkg>`).
 - [ ] Keep secrets in env / a secret store; never in `.mcp.json` or `.ai/`.
 - [ ] Use least-privilege credentials per server (read-only role for read-only servers).

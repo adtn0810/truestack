@@ -29,5 +29,12 @@
   { "prompt": "what status codes and error model should this endpoint return, problem+json", "expect": "truestack-api-design", "notExpect": "truestack-backend-development" },
   { "prompt": "the migration locked the table and timed out, use expand contract", "expect": "truestack-database-migrations" },
   { "prompt": "logs are filling the disk and I have no telemetry to see what's slow", "expect": "truestack-observability", "notExpect": "truestack-root-cause-debugging" },
-  { "prompt": "study this competitor's approach and adopt the pattern into our codebase", "expect": "truestack-reverse-engineering" }
+  { "prompt": "study this competitor's approach and adopt the pattern into our codebase", "expect": "truestack-reverse-engineering" },
+
+  { "prompt": "how does Cloudflare achieve global rate limiting at the edge?", "expect": "truestack-deep-research", "notExpect": "truestack-reverse-engineering" },
+  { "prompt": "which fields count as PII in our logs and telemetry?", "expect": "truestack-data-privacy", "notExpect": "truestack-observability" },
+  { "prompt": "add a redaction processor to the OTel collector so PII never reaches the logs", "expect": "truestack-observability", "notExpect": "truestack-data-privacy" },
+  { "prompt": "write the Dockerfile and nginx config to run this app on my VPS", "expect": "truestack-deploy-and-runtime", "notExpect": "truestack-ci-and-delivery" },
+  { "prompt": "is my login and password hashing setup secure, and how should we store user data safely?", "expect": "truestack-application-security", "notExpect": "truestack-data-privacy" },
+  { "prompt": "from now on, always run the tests after every edit", "notExpect": "truestack-task-scheduling" }
 ]

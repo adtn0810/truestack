@@ -58,7 +58,7 @@ for (const c of cases) {
   const r = rank(c.prompt);
   const topK = (r.slice(0, c.topK || 2)).map((x) => x[0]);
   const top1 = r[0]?.[0];
-  const fires = topK.includes(c.expect);
+  const fires = !c.expect || topK.includes(c.expect); // pure should-not-fire cases omit `expect`
   const quiet = !c.notExpect || c.notExpect !== top1; // a should-not-fire skill must not rank #1
   if (fires && quiet) pass++;
   else fails.push({ p: c.prompt, expect: c.expect, notExpect: c.notExpect, got: r.slice(0, 3).map((x) => `${x[0]}:${x[1].toFixed(1)}`) });

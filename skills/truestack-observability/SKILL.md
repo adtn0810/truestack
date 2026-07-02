@@ -8,7 +8,8 @@ description: Instrument a self-hosted backend so you can see what it's doing in 
   a "correlation ID" / "request ID" / "trace ID in logs", expose a "health" / "readiness" /
   "liveness" endpoint as a monitoring signal, set up "SLOs" / "error budget" / "burn-rate alerts",
   or fix "noisy alerts", "high cardinality" / "too many timeseries", "logs filling the disk",
-  "redact PII from logs", or "I have no telemetry yet / can't see what my service is doing".
+  "add a redaction processor to the telemetry pipeline", or "I have no telemetry yet / can't
+  see what my service is doing".
 ---
 
 # truestack-observability

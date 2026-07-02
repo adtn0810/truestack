@@ -23,7 +23,10 @@
 //     shell/MCP tool actually executes — which this gate does see.
 //   * Fail-safe: unreadable/garbled stdin → ask (we cannot see the call, so a human must).
 //
-// Zero dependencies; Node is always present wherever Claude Code runs.
+// Requires `node` on PATH (a native/binary Claude Code install may not ship one — verify with
+// `node --version`; without it the hook command errors and the gate is silently inert).
+// HONEST SCOPE: this is a guardrail, not a sandbox — a determined adversary can compose a
+// command no regex list anticipates. Known accepted gaps are documented in hooks/README.md.
 
 function decide(permissionDecision, permissionDecisionReason) {
   process.stdout.write(JSON.stringify({
@@ -62,6 +65,8 @@ const SHELL_DENY = [
   [/>\s*\/dev\/(sd|nvme|disk|mmcblk|vd)/i, "redirect onto a raw disk device"],
   [/\bchmod\b[^\n|;&]*\s-\w*R\w*\b[^\n|;&]*\s(\/|~|\$HOME)(\s|$)/i, "recursive chmod on a root"],
   [/\b(Clear-Disk|Format-Volume|Remove-Item|ri|rd|rmdir)\b[^\n]*\s(C:\\\\?|D:\\\\?|\$HOME|~)(\s|$)/i, "PowerShell wipe of a drive/home root"],
+  [/\b(Format-Volume|Clear-Disk|Initialize-Disk|diskpart)\b/i, "disk format/clear/partition tool"],
+  [/(^|[\s;&|])format\s+[a-z]:/i, "format a drive letter"],
 ];
 // Destructive / dangerous but plausibly legitimate → ASK.
 const SHELL_ASK = [
@@ -88,12 +93,21 @@ const SHELL_ASK = [
   [/\bchown\b[^\n]*\s-\w*R/i, "recursive chown"],
   [/\bmv\b[^\n|]*\s\/dev\/null(\s|$)/i, "move to /dev/null (destroys data)"],
   [/\bshred\b/i, "shred"],
+  [/\bfind\b[^\n|;&]*\s-delete\b/i, "find -delete (bulk file deletion)"],
+  [/\brsync\b[^\n]*\s--delete\w*\b/i, "rsync --delete (mirrors deletions)"],
+  [/\b(psql|mysql|sqlite3|sqlcmd|mssql-cli)\b[^\n]*\b(truncate\s|delete\s+from\b|drop\s+(table|database|schema|index))/i, "SQL client executing a destructive statement"],
+  [/\baws\s+\w[\w-]*\s+(delete|terminate|remove)-[\w-]+/i, "aws destructive operation"],
+  [/\baz\s+[\w ]*\bdelete\b/i, "azure cli delete"],
+  [/\bgcloud\s+[\w -]*\bdelete\b/i, "gcloud delete"],
+  [/\bgh\s+(repo|release|api|secret|gist)\b[^\n]*\bdelete\b/i, "gh destructive operation"],
   // obfuscated / remote-fetched execution
   [/\|\s*(sudo\s+)?(sh|bash|zsh|pwsh|powershell)\b/i, "pipe into a shell"],
   [/\b(curl|wget|iwr|irm)\b[^\n|]*\|\s*\w*(sh|bash)/i, "download piped into a shell"],
   [/\b(base64\s+(-d|--decode)|xxd\s+-r|openssl\s+enc\s+-d)\b/i, "decode-then-execute payload"],
   [/\beval\b/i, "eval"],
   [/\b(Invoke-Expression|iex)\b/i, "PowerShell Invoke-Expression"],
+  [/\b(powershell|pwsh)(\.exe)?\b[^\n|;&]*\s-\s*e(c|nc\w*)?\b/i, "PowerShell encoded command (-EncodedCommand)"],
+  [/\b(node|python[0-9.]*|ruby|perl)(\.exe)?\b[^\n]*\s-[a-z]*[ce]\b[^\n]*\b(rmSync|rmdirSync|unlinkSync|rmtree|os\.remove|os\.unlink|fs\.rm|rimraf|FileUtils\.rm)\b/i, "interpreter one-liner performing filesystem destruction"],
   // PowerShell destructive (alias/flag-order agnostic)
   [/\b(Remove-Item|ri|del|erase|rd|Clear-Content|Set-Content)\b/i, "PowerShell remove/overwrite"],
   [/\bRemove-Item\b[^\n]*-\w*(Recurse|Force)/i, "PowerShell Remove-Item -Recurse/-Force"],
@@ -111,8 +125,10 @@ const LEAF_DESTRUCTIVE = /\b(delete|drop|truncate|destroy|purge|wipe|erase|expun
 const LEAF_OUTBOUND = /\b(send|publish|email|notify|dispatch|broadcast|webhook|sms|deliver|emit|message)\b/i;
 const LEAF_SCHEMA = /\b(migrate|migration|alter|reindex|ddl)\b|\b(create|drop|rename)\s*(index|collection|table|column|database)\b|\b(add|drop)\s*column\b/i;
 const LEAF_WRITE = /\b(insert|update|upsert|replace|modify|write|put|save|create|register|provision)\b/i;
-// Mutation indicators inside the MCP tool input (e.g. an aggregate with a $out stage).
-const INPUT_WRITE = /(\$out|\$merge|\$set|\$unset|bulkWrite|writeConcern|"?(deleteMany|insertMany|updateMany|drop)"?)/i;
+// Mutation indicators inside the MCP tool input (e.g. an aggregate with a $out stage, or a
+// generic query/execute tool carrying destructive SQL). Word-shaped tokens are anchored so
+// prose like "dropdown" / "drag-and-drop" in a read call can't trip an approval prompt.
+const INPUT_WRITE = /(\$out|\$merge|\$set|\$unset|bulkWrite|writeConcern|"(deleteMany|insertMany|updateMany|drop)"|\bdelete\s+from\b|\btruncate\s+(table\s+)?[a-z_"]|\bdrop\s+(table|database|schema|collection|index)\b)/i;
 
 function classifyMcp(toolName, toolInput) {
   const leafTail = toolName.split("__").slice(2).join("__") || toolName; // tool segment(s)

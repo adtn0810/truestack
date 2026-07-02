@@ -1,25 +1,27 @@
 {
   "permissions": {
     "deny": [
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf ~)",
-      "Bash(mkfs *)"
+      "Bash(mkfs:*)",
+      "Bash(dd if=/dev/zero of=/dev/:*)",
+      "Bash(diskpart:*)"
     ],
     "ask": [
-      "Bash(rm -rf *)",
-      "Bash(git clean *)",
-      "Bash(git push --force *)",
-      "Bash(truncate *)",
-      "Bash(docker volume rm *)",
-      "Bash(kubectl delete *)",
-      "Bash(terraform destroy *)",
-      "mcp__*__delete-many",
-      "mcp__*__update-many",
-      "mcp__*__insert-many",
-      "mcp__*__drop-collection",
-      "mcp__*__create-collection",
-      "mcp__*__create-index",
-      "mcp__*__rename-collection"
+      "Bash(rm -rf:*)",
+      "Bash(git clean:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(truncate:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker system prune:*)",
+      "Bash(kubectl delete:*)",
+      "Bash(terraform destroy:*)",
+      "mcp__plugin_mongodb_mongodb__delete-many",
+      "mcp__plugin_mongodb_mongodb__update-many",
+      "mcp__plugin_mongodb_mongodb__insert-many",
+      "mcp__plugin_mongodb_mongodb__drop-collection",
+      "mcp__plugin_mongodb_mongodb__drop-database",
+      "mcp__plugin_mongodb_mongodb__create-index",
+      "mcp__plugin_mongodb_mongodb__rename-collection"
     ]
   }
 }

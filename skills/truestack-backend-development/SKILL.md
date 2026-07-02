@@ -23,7 +23,9 @@ verify-the-effect rule.
 
 If the request is ambiguous — more than one reasonable implementation fits — clarify first
 with a short, capped round of questions-with-defaults before writing code; don't guess.
-(Same clarify-then-proceed loop as `truestack-architecture-planning`.)
+(Same clarify-then-proceed loop as `truestack-architecture-planning`.) Seams: planning a new
+build starts in `truestack-architecture-planning`; authoring schema/data migrations (DDL,
+backfills) is `truestack-database-migrations`, not here.
 
 ## 1. Stack — match the project, recommend only for greenfield
 Before recommending or using a library/framework/API, **ground it in current docs** — auto-research

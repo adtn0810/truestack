@@ -1,10 +1,10 @@
 ---
 name: truestack-root-cause-debugging
-description: Investigate a bug, error, crash, failing test, regression, or any
-  unexpected/slow behavior and fix it at the root. Use the moment something is reported
-  broken or an error/stack trace is pasted — even a one-line "this isn't working".
-  Confirms the real root cause with evidence before changing anything, and applies a
-  permanent fix, never a temporary patch.
+description: Investigate a bug, error, crash, failing test, regression, or unexpected/slow
+  behavior that is a DEFECT, and fix it at the root. Use the moment something is reported
+  broken or an error/stack trace is pasted — even a one-line "this isn't working". Confirms
+  the real root cause with evidence before changing anything, and applies a permanent fix,
+  never a temporary patch.
 ---
 
 # truestack-root-cause-debugging
@@ -69,7 +69,9 @@ triggers, the new regression test passes, and `truestack-quality-control` finds 
 the bug still reproduces, a new symptom appears, or truestack-quality-control flags a regression — the root
 cause was wrong or incomplete: **loop back to step 1**, re-confirm the actual cause with fresh
 evidence, re-fix, and re-verify. Repeat until all three hold; never declare it fixed on a
-partial result.
+partial result. If repeated loops stop making progress — hypotheses exhausted, or the same
+failure recurring — stop and escalate with an honest completion score and what you ruled out,
+instead of spinning.
 
 Honest exit: if the bug genuinely can't be reproduced, or the root cause can't be confirmed
 after thorough investigation, say so plainly and report what you tried and what's needed

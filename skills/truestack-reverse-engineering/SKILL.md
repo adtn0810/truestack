@@ -2,16 +2,18 @@
 name: truestack-reverse-engineering
 description: Reverse-engineer a reference — a repo, code snippet, doc/spec, or a legacy system —
   into a verified model of how it works, then derive a safe upgrade path for the user's own
-  system. Use whenever the user shares code or a reference and asks how it works or how it's
-  built, says "reverse engineer this", "how does X do it / achieve this", "study this repo and
-  upgrade mine", "port / adopt / replicate this pattern", "modernize my system based on this", or
-  needs to understand an unfamiliar codebase before changing it. Grounds every claim in the actual
-  artifact (verified vs inferred), respects license/IP (adapt patterns, never copy proprietary
-  source; adopting licensed code is Ask-first; authorized targets only), and routes the upgrade
-  through truestack-architecture-planning's approval gate and truestack-quality-control.
+  system. Use whenever the user shares or points at a concrete artifact and asks how it works
+  or how it's built, says "reverse engineer this", "study this repo and upgrade mine", "port /
+  adopt / replicate this pattern", "modernize my system based on this", or needs to understand
+  an unfamiliar codebase before changing it. Requires an artifact in hand that you can open and
+  verify. Grounds every claim in the actual artifact (verified vs inferred) and respects
+  license/IP — adapt patterns, never copy proprietary source.
 ---
 
 # truestack-reverse-engineering
+
+**Not this skill:** a "how does X achieve this" question with **no artifact to open** →
+`truestack-deep-research`; routine onboarding of your own repo → `truestack-project-memory`.
 
 Understand the reference *for real*, then **adapt — not clone**. The deliverable is a verified
 model of **how** it works and **why**, turned into a **safe upgrade** for the user's system. Honesty

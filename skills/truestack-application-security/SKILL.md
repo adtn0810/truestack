@@ -10,7 +10,7 @@ description: Design and harden the security of a self-hosted app — authenticat
   login / sign-in / sign-up / auth flow, weighs session vs JWT, adds MFA/2FA/passkeys, sets up
   RBAC/roles/permissions/access control, mentions IDOR/SSRF/CSRF/XSS/SQLi/injection, hashes
   passwords, manages secrets/API keys/.env, sets CSP/security headers, threat-models / sizes an
-  attack surface, or handles user data / GDPR/CCPA. The DESIGN discipline.
+  attack surface, or asks how to store user data safely. The DESIGN discipline.
 ---
 
 # truestack-application-security

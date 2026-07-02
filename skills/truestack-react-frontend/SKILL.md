@@ -16,6 +16,8 @@ distinctive, intentional design *and* clean, fast, accessible React.
 
 Read project memory first (`CLAUDE.md` + `.ai/memory/`) for the design language, component
 conventions, and stack. If the request is ambiguous, clarify first (same loop as `truestack-architecture-planning`).
+Ground framework claims in the project's actual dependencies (React version, compiler/bundler
+config) and current docs — don't assert library behavior from recall.
 
 ## 1. Design with a point of view (don't ship AI slop)
 Approach it as the design lead giving this product an identity that couldn't be mistaken for
@@ -33,7 +35,7 @@ self-critique pass, and copywriting) → **`references/design-system.md`**.
 ## 2. Engineer it right (the part design skills skip)
 - **Components** — single responsibility, small and focused, one per folder. Pull reusable logic into **custom hooks**; keep components **pure** (no side effects in render). Prop-driven over global state. TypeScript contracts on props.
 - **State** — local first → **Context** for low-frequency global (theme/auth) → **TanStack Query / SWR** for *server* state (never store fetched data in Redux) → a client store (Zustand / Redux Toolkit) only for complex shared client state.
-- **React 19** — the **Compiler auto-memoizes, so stop hand-writing `useMemo`/`useCallback`** everywhere; add them only where the Profiler shows a real hot path. Use **Actions + `useOptimistic` + `useFormStatus`** for forms/optimistic UI, **`use()`** for promises/context, native `<title>`/`<meta>`, and `ref` as a prop (no `forwardRef`).
+- **React 19 + Compiler** — the **React Compiler is a separate, opt-in build plugin, not part of React 19 itself**: where it's enabled in the build config, stop hand-writing `useMemo`/`useCallback`; where it isn't, keep targeted manual memoization on Profiler-proven hot paths. Use **Actions + `useOptimistic` + `useFormStatus`** for forms/optimistic UI, **`use()`** for promises/context, native `<title>`/`<meta>`, and `ref` as a prop (no `forwardRef`).
 - **Data** — wrap fetches in **Suspense** with real skeletons; avoid the client waterfall (mount → effect → fetch → re-render). With a framework that supports Server Components, render server-first and keep interactivity in small client islands.
 - **States** — error boundaries around critical pieces; design the empty and error states as deliberately as the happy path.
 

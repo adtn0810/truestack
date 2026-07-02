@@ -8,6 +8,7 @@ plus set-level checks (trigger collisions). Exit code 1 if any Critical finding.
 import os, re, sys, json, glob
 
 BODY_LINE_BUDGET = 250
+BODY_CHAR_BUDGET = 12000       # rubric budget: ~250 lines / ~12k chars — enforce BOTH halves
 DESC_MIN, DESC_MAX = 40, 1024  # 1024 = the platform hard limit for the description field
 COLLISION_MIN = 6             # set-level: report skill pairs sharing >= this many distinctive desc terms
 # Generic words filtered out before computing trigger-surface overlap (keep domain terms).
@@ -55,10 +56,13 @@ def lint_skill(folder):
             findings.append(("OPT", "LONG_DESCRIPTION", f"description {len(desc)}c > {DESC_MAX}"))
         if not re.search(r'\b(use|when|whenever|after|before)\b', desc, re.I):
             findings.append(("CRIT", "MISSING_TRIGGER", "description never says WHEN to use it"))
-    # body budget
+    # body budget (both halves of the rubric budget: lines AND chars)
     blines = body.count("\n") + 1
+    bchars = len(body)
     if blines > BODY_LINE_BUDGET:
         findings.append(("REQ", "BLOATED_SKILL", f"body {blines} lines > {BODY_LINE_BUDGET} budget"))
+    if bchars > BODY_CHAR_BUDGET:
+        findings.append(("REQ", "BLOATED_SKILL", f"body {bchars} chars > {BODY_CHAR_BUDGET} budget"))
     # references: orphan + dead-ref
     refdir = os.path.join(folder, "references")
     ref_files = set(os.path.basename(p) for p in glob.glob(os.path.join(refdir, "*"))) if os.path.isdir(refdir) else set()
@@ -75,7 +79,7 @@ def lint_skill(folder):
     # score: start 10, subtract by severity
     pen = {"CRIT": 3.0, "REQ": 1.0, "OPT": 0.4}
     score = max(0.0, 10.0 - sum(pen[s] for s, _, _ in findings))
-    meta = {"name": name, "desc_len": len(desc), "body_lines": blines,
+    meta = {"name": name, "desc_len": len(desc), "body_lines": blines, "body_chars": bchars,
             "refs": sorted(ref_files), "referenced": sorted(referenced),
             "trigger_terms": sorted(set(re.findall(r'\b(use|when|whenever|after|before)\b', desc, re.I))),
             "desc_tokens": sorted(w for w in set(re.findall(r'[a-z]{4,}', desc.lower())) if w not in STOP)}
@@ -95,7 +99,7 @@ def main():
         descs[nm] = set(meta.get("desc_tokens", []))
         ncrit = sum(1 for s, _, _ in findings if s == "CRIT"); crit += ncrit
         badge = "NEEDS-WORK" if ncrit else ("GOLD" if score >= 8.5 else "SILVER" if score >= 7 else "BRONZE" if score >= 5.5 else "NEEDS-WORK")
-        print(f"\n{nm:18} static={score:4}/10  [{badge}]  body={meta.get('body_lines','?')}l desc={meta.get('desc_len','?')}c")
+        print(f"\n{nm:18} static={score:4}/10  [{badge}]  body={meta.get('body_lines','?')}l/{meta.get('body_chars','?')}c desc={meta.get('desc_len','?')}c")
         for sev, code, msg in findings:
             print(f"    {sev:4} {code:18} {msg}")
         if not findings:

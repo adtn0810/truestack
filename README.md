@@ -10,7 +10,7 @@ with process that sizes itself to the work.
 
 **Highlights:**
 - **`truestack-orchestrate` router** — classifies any request, right-sizes it, runs the canonical chain, and gates everything through `truestack-quality-control`; routes to the best skill even when it lives in another installed set.
-- **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (54-case tested), plus an append-only MCP audit log.
+- **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (77-case tested), plus an append-only MCP audit log. *Enforced once wired:* automatic with plugin install, a one-time settings merge with drop-in install (step 2 below).
 - **Honesty, machine-checked** — an always-on grounding contract, a code↔memory reconciliation tally, and auto-research of current-fact decisions from authoritative sources.
 - **Full lifecycle** — plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation.
 - **Self-measuring** — ships its own deterministic skill lint + a behavioral routing eval, both run in CI.
@@ -107,9 +107,11 @@ This repo is itself a valid Claude Code plugin (`.claude-plugin/plugin.json` +
 > Plugin-marketplace install *also* namespaces by plugin id, so it would double up to
 > `truestack:truestack-orchestrate`; use it only if you prefer plugin-managed updates.
 
-**Drop-in, kept current with `git pull` (symlink) — recommended:**
-Clone once, symlink the `truestack-*` folders into `~/.claude/`, then a `git pull` updates your
-live skills with no re-copy. macOS / Linux:
+**Drop-in, kept current with `git pull` — recommended.** Two steps: link the skills/commands,
+then wire the hooks (skills and commands auto-load from `~/.claude/`; **hooks never do** — an
+unwired gate is silently dead).
+
+*Step 1 — link.* macOS / Linux (symlinks):
 ```sh
 git clone <your-fork-url> ~/.claude/truestack
 mkdir -p ~/.claude/skills ~/.claude/commands
@@ -117,17 +119,36 @@ for d in ~/.claude/truestack/skills/truestack-*;      do ln -s "$d" ~/.claude/sk
 for f in ~/.claude/truestack/commands/truestack-*.md; do ln -s "$f" ~/.claude/commands/; done
 # update anytime:  cd ~/.claude/truestack && git pull
 ```
-Windows (PowerShell — symlinks need Developer Mode or an admin shell):
+Windows (PowerShell — junctions for skill folders need **no** admin or Developer Mode; command
+*files* can't be junctioned, so copy them and re-copy after each `git pull`):
 ```powershell
 git clone <your-fork-url> "$HOME\.claude\truestack"
 New-Item -ItemType Directory -Force "$HOME\.claude\skills","$HOME\.claude\commands" | Out-Null
 Get-ChildItem "$HOME\.claude\truestack\skills\truestack-*" -Directory | ForEach-Object {
-  New-Item -ItemType SymbolicLink -Path "$HOME\.claude\skills\$($_.Name)" -Target $_.FullName }
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\$($_.Name)" -Target $_.FullName }
 Get-ChildItem "$HOME\.claude\truestack\commands\truestack-*.md" | ForEach-Object {
-  New-Item -ItemType SymbolicLink -Path "$HOME\.claude\commands\$($_.Name)" -Target $_.FullName }
-# update anytime:  cd "$HOME\.claude\truestack"; git pull
+  Copy-Item $_.FullName "$HOME\.claude\commands\$($_.Name)" -Force }
+# update anytime:  cd "$HOME\.claude\truestack"; git pull   # then re-run the Copy-Item loop
 ```
-Either way, merge the `truestack/.mcp.example.json` entries you need into your project `.mcp.json`.
+(True symlinks on Windows need an elevated shell — or PowerShell 7+ with Developer Mode;
+Windows PowerShell 5.1 can't create them unelevated even with Developer Mode. Junctions avoid
+all of that.) Or run the bundled one-shot: `powershell -ExecutionPolicy Bypass -File .\install.ps1 -WireHooks`
+— it links/copies everything, migrates a stale pre-namespacing install to a backup folder, and
+wires the hooks (Step 2) with a settings backup.
+
+*Step 2 — wire the hooks.* Merge this into `~/.claude/settings.json` (adjust the clone path;
+full options + per-project variant in [`hooks/README.md`](hooks/README.md)):
+```json
+{ "hooks": {
+  "PreToolUse": [ { "matcher": "*", "hooks": [
+    { "type": "command", "command": "node \"$HOME/.claude/truestack/hooks/pretooluse-gate.mjs\"", "timeout": 30 } ] } ],
+  "UserPromptSubmit": [ { "hooks": [
+    { "type": "command", "command": "node \"$HOME/.claude/truestack/hooks/truestack-orchestrate-reminder.js\"", "timeout": 10 } ] } ]
+} }
+```
+Verify: `node ~/.claude/truestack/hooks/test-gate.mjs` (77/77) and `/hooks` inside Claude Code.
+
+Finally, merge the `truestack/.mcp.example.json` entries you need into your project `.mcp.json`.
 
 **Drop-in, one-time copy (simplest; re-copy after each `git pull`):**
 ```sh
@@ -135,8 +156,9 @@ git clone <your-fork-url> truestack
 cp -r truestack/skills/*   ~/.claude/skills/      # the 21 truestack-* skills
 cp -r truestack/commands/* ~/.claude/commands/    # the 8 /truestack-* slash commands
 ```
+Then do *Step 2 — wire the hooks* above (copying files never wires hooks).
 
-**As a plugin via marketplace (double-prefixes the names — see note above):**
+**As a plugin via marketplace (double-prefixes the names — see note above; hooks auto-load, no Step 2 needed):**
 ```sh
 git clone <your-fork-url> truestack
 ```

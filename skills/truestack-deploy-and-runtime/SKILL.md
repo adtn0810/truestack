@@ -64,7 +64,7 @@ Low-downtime on one box is `nginx -s reload` (or `systemctl reload`): new worker
 new config/cert while old workers finish in-flight requests — zero dropped connections.
 - **Always `nginx -t` BEFORE reload** — a bad config on reload keeps the old workers serving; a bad config on a full *restart* takes the site down.
 - **Set `worker_shutdown_timeout` explicitly** — the default is unbounded, so one long-lived/streaming connection blocks old workers from ever exiting during a deploy or cert swap.
-- Harden TLS: **TLS 1.2/1.3 only, OCSP stapling on, modern ciphers**.
+- Harden TLS: **TLS 1.2/1.3 only, modern ciphers**. Don't enable OCSP stapling for Let's Encrypt certs — LE shut down its OCSP responders in 2025 (CRLs now); stapling only applies if your CA still runs OCSP.
 
 ## 6. TLS renewal via deploy hook, not a restart cron
 Certbot's systemd timer renews twice daily. Put the reload in

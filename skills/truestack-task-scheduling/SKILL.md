@@ -3,9 +3,10 @@ name: truestack-task-scheduling
 description: Set up work that runs automatically later or on a recurring cadence — a daily
   check, a weekly report, a periodic sync, a deferred run — instead of doing it once now.
   Use whenever the user says "every day", "each morning", "weekly", "remind me", "run this
-  at", "from now on", or wants a task to recur or fire in the future. Produces a self-contained
-  job spec (trigger, the exact prompt the run executes, delivery, and failure policy) and wires
-  it to the host's scheduler.
+  at", or wants a task to recur or fire in the future. (A standing behavior rule — hooks or
+  settings config — is not a schedule.) Produces a self-contained job spec (trigger, the
+  exact prompt the run executes, delivery, and failure policy) and wires it to the host's
+  scheduler.
 ---
 
 # truestack-task-scheduling
@@ -47,10 +48,14 @@ repeats a snapshot.
   explicitly authorized the action itself.
 
 ## 5. Wire it to the host
-The actual mechanism depends on where this runs — the host's scheduled-tasks feature, system
-`cron`, a CI cron, or a job runner. This skill defines the spec; create the schedule with the
-host's scheduler and confirm the first run's timing back to the user. If no scheduler is
-available, say so and hand back the spec to run manually.
+Discover, don't assume: check what scheduler actually exists here, in this order — (1) the
+harness's own scheduling tools if the session exposes them (some Claude Code environments ship
+Cron tools — look for them before shelling out), (2) system `cron` / Windows Task Scheduler
+running headless `claude -p "<run prompt>"`, (3) a CI cron (GitHub Actions `schedule:`).
+Concrete copy-paste recipes for each → **`references/wiring.md`**. This skill defines the spec;
+create the schedule with the host's scheduler and confirm the first run's timing back to the
+user. If no scheduler is available, say so and hand back the spec to run manually — never
+pretend a schedule exists.
 
 ## Output
 ```

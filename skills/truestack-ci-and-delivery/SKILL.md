@@ -8,9 +8,9 @@ description: Set up CI/CD and ship safely to a self-hosted server — pipeline s
   checks", "branch protection", "merge queue", "pin actions", "SHA pin", "workflow
   permissions", "GITHUB_TOKEN", "OIDC", "cache dependencies", "Docker layer caching",
   "release automation", "semantic versioning", "bump the version", "generate changelog",
-  "tag a release", "conventional commits", "ship to production / deploy to my server" (the
-  pipeline that triggers it), "health-gated deploy step", "rollback in CI", "smoke test before
-  traffic", or "sequence a migration step in the deploy".
+  "tag a release", "conventional commits", "the CI pipeline that ships a release to
+  production", "health-gated deploy step", "rollback in CI", "smoke test before traffic", or
+  "sequence a migration step in the deploy".
 ---
 
 # truestack-ci-and-delivery
@@ -56,8 +56,8 @@ actually running**. Hand the pre-merge depth (test review, six-axis review, safe
 **truestack-quality-control** — these checks are the gate, QC is the judgment.
 
 ## 3. Supply chain — pin, then wait
-- **SHA-pin every third-party action** to the full 40-char commit SHA, never `@v4` / `@main`. Tags are mutable: the tj-actions (Mar 2025, ~23k repos) and trivy-action (Mar 2026, 75/76 tags force-pushed) compromises rewrote tags out from under pinned-by-tag users. Pin your **own reusable workflows** too.
-- **Pinning is necessary but not sufficient.** Add a **7–14 day cooldown** before adopting a new SHA — most supply-chain compromises are detected in under a week, so the delay catches ~80–90% of them. Let **Dependabot** propose the pin bumps; you review and age them.
+- **SHA-pin every third-party action** to the full 40-char commit SHA, never `@v4` / `@main`. Tags are mutable: real compromises (tj-actions in 2025 among others) rewrote tags out from under pinned-by-tag users — auto-research a current example before citing one. Pin your **own reusable workflows** too.
+- **Pinning is necessary but not sufficient.** Add a **7–14 day cooldown** before adopting a new SHA — most supply-chain compromises are detected within days of publication, so the delay catches the bulk of them. Let **Dependabot** propose the pin bumps; you review and age them.
 
 ## 4. Least-privilege permissions & secrets
 - Default `permissions: contents: read` at the **workflow** level, then grant the minimum extra scope **per job** — only the release job gets `contents: write`, only a PR-comment job gets `pull-requests: write`. The legacy read/write default means one compromised action can push to the repo.
