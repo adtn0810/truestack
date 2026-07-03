@@ -88,7 +88,7 @@ and keep the re-identification key in a **separate keystore** from the pseudonym
 co-located, it's worthless.
 
 ## 6. Encrypt PII at rest with envelope encryption; treat key destruction as deletion
-AES-256 is the 2026 reference; the HIPAA Security Rule NPRM makes encryption-at-rest
+AES-256(-GCM) is a standard at-rest choice; the HIPAA Security Rule NPRM makes encryption-at-rest
 **required** (removing the old "addressable" escape). On one box the hard part is keys: never
 store the data key beside the ciphertext or in the same DB. **Per-tenant / per-subject data
 keys** let you render data unrecoverable by destroying one key — **crypto-shredding** — the

@@ -1,8 +1,8 @@
 ---
 name: truestack-architecture-planning
-description: Plan the architecture and data flow for a backend feature, service, or
+description: Plan the architecture and data flow for a feature, service, or
   system before any implementation code is written. Use this whenever the user is
-  designing, scoping, or starting to build something new on the backend — even when
+  designing, scoping, or starting to build something new (backend or frontend) — even when
   they just say "build X" or "how should I structure this" without saying "plan".
   Owns the planning step that precedes any implementation code. Treats the request as
   intent to be clarified, picks the right architecture per project, sizes the process

@@ -51,7 +51,7 @@ while `truestack-dependency-management` owns the ongoing dependency **policy/lif
 
 ## 1. Authorization: deny by default, on the server, scoped to the subject
 Broken Access Control is currently the #1 risk (OWASP A01 in the present Top 10 — confirm the live
-ranking, don't quote it from memory; found in ~100% of tested apps and it now also absorbs SSRF).
+ranking, don't quote it from memory; found in ~100% of tested apps). SSRF is a **separate** category (A10:2021), not folded into A01.
 Default-deny every route, and derive the subject from the **session/token, never from request input**.
 - **IDOR/BOLA is the failure most teams miss.** Any time the client names a resource
   (`/orders/123`, `?user_id=`), re-check ownership at the **data layer for that exact record on
@@ -106,7 +106,7 @@ for pure-JSON APIs, require a custom header (e.g. `X-CSRF-Token`) that a simple 
 can't set.
 
 ## 7. SSRF: an access-control problem, allowlist-only
-SSRF now lives under A01 — defend it with an **allowlist of permitted hosts, never a denylist of
+SSRF is its own OWASP category (A10:2021), not part of A01 — defend it with an **allowlist of permitted hosts, never a denylist of
 bad IPs**. The self-host bug: validate-then-fetch is vulnerable to DNS-rebinding/TOCTOU —
 **resolve the hostname once, check the resolved IP against the allowlist, then connect to that
 exact IP**, and disable HTTP redirect-following on server-side fetches. Block loopback/private/

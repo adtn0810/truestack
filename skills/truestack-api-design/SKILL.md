@@ -133,7 +133,7 @@ breaking change. **Generate clients/stubs from the spec** so it can't drift from
 ## 8. Rate limit / quota is published, not a surprise 429
 Advertise limits with `RateLimit` (remaining + reset) and `RateLimit-Policy` (quota + window) headers
 so well-behaved clients self-throttle. On a **429** (and a **503**) always send `Retry-After`; when both
-`Retry-After` and `RateLimit` are present, `Retry-After` wins. Document the limits **in the OpenAPI
+are present, prefer `Retry-After` for the concrete retry delay (`RateLimit` still advertises the quota/window). Document the limits **in the OpenAPI
 spec**, not just prose. This matters *more* on a single box: there's no elastic autoscaling, so the rate
 limiter is your primary overload-protection and fairness mechanism — size it to what the one box can
 actually sustain.

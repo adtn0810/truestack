@@ -63,7 +63,11 @@ if ($WireHooks) {
   $ups += [pscustomobject]@{ hooks = @([pscustomobject]@{ type = "command"; command = "node `"$reminder`""; timeout = 10 }) }
   $settings.hooks | Add-Member -Force -NotePropertyName PreToolUse -NotePropertyValue $pre
   $settings.hooks | Add-Member -Force -NotePropertyName UserPromptSubmit -NotePropertyValue $ups
-  $settings | ConvertTo-Json -Depth 20 | Out-File $settingsPath -Encoding utf8
+  # Write UTF-8 WITHOUT a BOM. `Out-File -Encoding utf8` on Windows PowerShell 5.1 prepends a
+  # BOM, and a leading U+FEFF makes Node's JSON.parse throw — which would corrupt the user's
+  # entire ~/.claude/settings.json. WriteAllText with UTF8Encoding($false) is BOM-free on 5.1 and 7+.
+  $json = $settings | ConvertTo-Json -Depth 20
+  [System.IO.File]::WriteAllText($settingsPath, $json, (New-Object System.Text.UTF8Encoding($false)))
   Write-Host "Wired PreToolUse gate + orchestrate reminder into $settingsPath (backup saved)."
 } else {
   Write-Host "`nHooks NOT wired (run with -WireHooks, or merge this into $settingsPath):"
@@ -76,4 +80,4 @@ if ($WireHooks) {
 } }
 "@
 }
-Write-Host "`nVerify: node `"$($repo -replace '\\','/')/hooks/test-gate.mjs`"  (expect 77/77), then /hooks in Claude Code."
+Write-Host "`nVerify: node `"$($repo -replace '\\','/')/hooks/test-gate.mjs`"  (expect 84/84), then /hooks in Claude Code."

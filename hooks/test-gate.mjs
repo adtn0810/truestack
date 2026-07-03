@@ -11,8 +11,10 @@ const GATE = join(HERE, "pretooluse-gate.mjs");
 function run(payload) {
   const input = payload === "__RAW_GARBAGE__" ? "not json{{{" : JSON.stringify(payload);
   const r = spawnSync(process.execPath, [GATE], { input, encoding: "utf8" });
-  try { return JSON.parse(r.stdout).hookSpecificOutput.permissionDecision; }
-  catch { return `<<no-decision: ${(r.stdout || r.stderr || "").slice(0, 80)}>>`; }
+  try {
+    // The gate omits permissionDecision for its no-opinion path; that absence IS "defer".
+    return JSON.parse(r.stdout).hookSpecificOutput.permissionDecision ?? "defer";
+  } catch { return `<<no-decision: ${(r.stdout || r.stderr || "").slice(0, 80)}>>`; }
 }
 const bash = (command) => ({ tool_name: "Bash", tool_input: { command } });
 const pwsh = (command) => ({ tool_name: "PowerShell", tool_input: { command } });
@@ -84,6 +86,15 @@ const cases = [
   ["ask: gh repo delete", bash("gh repo delete owner/repo --yes"), "ask"],
   ["ask: mcp query carrying DELETE FROM", mcp("mcp__db__query", { sql: "DELETE FROM users WHERE active = 0" }), "ask"],
   ["ask: mcp execute carrying DROP TABLE", mcp("mcp__db__execute", { sql: "DROP TABLE users" }), "ask"],
+
+  // ── MCP write-path hardening (2026-07 external audit) → ask / deny ──
+  ["ask: mcp query carrying UPDATE ... SET", mcp("mcp__db__query", { sql: "UPDATE users SET is_admin = 1" }), "ask"],
+  ["ask: mcp execute carrying INSERT INTO", mcp("mcp__db__execute", { sql: "INSERT INTO audit VALUES (1)" }), "ask"],
+  ["ask: mcp query UPDATE with backtick-quoted identifier", mcp("mcp__db__query", { sql: "UPDATE `users` SET is_admin = 1" }), "ask"],
+  ["ask: mcp bare payment verb (pay)", mcp("mcp__stripe__pay"), "ask"],
+  ["ask: mcp bare payment verb (wire)", mcp("mcp__bank__wire_transfer"), "ask"],
+  ["ask: mcp delete_rows w/ command field is name-gated, not shell-bypassed", mcp("mcp__db__delete_rows", { command: "go" }), "ask"],
+  ["deny: mcp run tool carrying rm -rf / (shell classifier via most-restrictive)", mcp("mcp__runner__run", { command: "rm -rf /" }), "deny"],
 
   // ── bypass-hardening regressions → deny ──
   ["deny: Format-Volume", pwsh("Format-Volume -DriveLetter D"), "deny"],

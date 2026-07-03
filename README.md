@@ -10,7 +10,7 @@ with process that sizes itself to the work.
 
 **Highlights:**
 - **`truestack-orchestrate` router** — classifies any request, right-sizes it, runs the canonical chain, and gates everything through `truestack-quality-control`; routes to the best skill even when it lives in another installed set.
-- **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (77-case tested), plus an append-only MCP audit log. *Enforced once wired:* automatic with plugin install, a one-time settings merge with drop-in install (step 2 below).
+- **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (84-case tested). *Enforced once wired:* automatic with plugin install, a one-time settings merge with drop-in install (step 2 below). The append-only MCP approval log is **skill-directed** (the model writes it under the `truestack-mcp-integration` skill), not hook-enforced.
 - **Honesty, machine-checked** — an always-on grounding contract, a code↔memory reconciliation tally, and auto-research of current-fact decisions from authoritative sources.
 - **Full lifecycle** — plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation.
 - **Self-measuring** — ships its own deterministic skill lint + a behavioral routing eval, both run in CI.
@@ -60,7 +60,7 @@ with process that sizes itself to the work.
 `truestack-mcp-integration` turns the set from advice into action through connected MCP servers, while
 keeping the discipline: **discover before you assume**, treat tool output as **untrusted data**,
 **read freely / write carefully**, and keep **money, destructive ops, schema changes, and
-outbound sends Ask-first**. Idempotency on retried writes; verify the real effect afterward. Every Ask-first call also leaves an **approval receipt + append-only audit row** (`.ai/agents/mcp-audit.md`) so external effects are reviewable like code.
+outbound sends Ask-first**. Idempotency on retried writes; verify the real effect afterward. Every Ask-first call also leaves an **approval receipt + append-only audit row** (`.ai/agents/mcp-audit.md`, written by the model under the skill's direction — not machine-enforced) so external effects are reviewable like code.
 Servers are declared in a committed, **secret-free** `.mcp.json` (env-var expansion `${VAR}`);
 this ships with an empty `.mcp.json` plus a `.mcp.example.json` template — connect only what a
 project needs. Full schema + per-category checklist (DB · vector · payments · webhooks · search)
@@ -146,7 +146,7 @@ full options + per-project variant in [`hooks/README.md`](hooks/README.md)):
     { "type": "command", "command": "node \"$HOME/.claude/truestack/hooks/truestack-orchestrate-reminder.js\"", "timeout": 10 } ] } ]
 } }
 ```
-Verify: `node ~/.claude/truestack/hooks/test-gate.mjs` (77/77) and `/hooks` inside Claude Code.
+Verify: `node ~/.claude/truestack/hooks/test-gate.mjs` (84/84) and `/hooks` inside Claude Code.
 
 Finally, merge the `truestack/.mcp.example.json` entries you need into your project `.mcp.json`.
 

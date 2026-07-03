@@ -4,6 +4,34 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+External-audit fixes (independent skill-eval pass; static lint + 5-agent judge + trigger + shipping-code review).
+
+### Security / tooling
+- **PreToolUse gate no longer emits a non-spec `"defer"` decision.** The no-opinion path now
+  omits `permissionDecision` entirely (the documented "no decision → normal flow" signal);
+  `allow`/`deny`/`ask` are the only spec values. An unrecognized decision string was undefined
+  behavior that only worked because the current harness ignores it.
+- **Gate MCP write-path hardened.** Generic MCP `query`/`execute` input now gates `UPDATE … SET`
+  and `INSERT INTO` (previously only DELETE/DROP/TRUNCATE); `LEAF_MONEY` adds bare `pay`/`wire`/
+  `remit`/`ach`; and MCP tools are now classified by **both** leaf name and any embedded
+  `command`/`script` (most-restrictive wins) so an MCP tool carrying a `command` field can no
+  longer dodge name-based gating. Test suite 77 → **84** cases.
+- **`install.ps1` writes `settings.json` as UTF-8 without a BOM** (`WriteAllText` +
+  `UTF8Encoding($false)`). `Out-File -Encoding utf8` on Windows PowerShell 5.1 prepends a BOM
+  that breaks strict JSON parsers, which could corrupt the user's global settings.
+
+### Fixed
+- **Factual:** `truestack-application-security` said SSRF was "absorbed into A01"; SSRF is its
+  own OWASP category (**A10:2021**). Corrected in both mentions.
+- **Unsourced precision (honesty):** softened "AES-256 is the 2026 reference" and the asserted
+  "`Retry-After` wins over `RateLimit`" rule to guidance.
+- **Scope:** `truestack-architecture-planning`'s description said "backend" but orchestrate
+  routes frontend planning through it — broadened to "backend or frontend".
+- **Honesty (README):** the append-only MCP audit log is now labelled **skill-directed**, not
+  machine-enforced, and moved out of the "Enforced governance" framing.
+
 ## [0.0.3] - 2026-07-02
 
 Self-audit release: the set was scored by its own `truestack-skill-evaluation` (static lint +

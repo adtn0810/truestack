@@ -17,7 +17,7 @@ just discouraged.
 | `truestack-orchestrate-reminder.js` | UserPromptSubmit hook that nudges non-trivial requests through the `truestack-orchestrate` router (skips slash commands and trivial chat; never blocks). |
 | `hooks.json` | Registers both hooks when this plugin is enabled (plugin installs only). |
 | `permissions.template.json` | Optional defense-in-depth `permissions` policy to merge into your project `.claude/settings.json`. |
-| `test-gate.mjs` | 77-case test suite that runs the real hook and asserts each decision. `node hooks/test-gate.mjs`. |
+| `test-gate.mjs` | 84-case test suite that runs the real hook and asserts each decision. `node hooks/test-gate.mjs`. |
 
 ## Decision model (deliberate)
 The gate **never says `allow`** — emitting `allow` would suppress your own permission settings
@@ -25,7 +25,7 @@ and silently widen access (the classic hook bypass). It only ever:
 
 - **`deny`** — blocks the unambiguously catastrophic (`rm -rf /`, fork bomb, `dd` to a raw disk, `mkfs`, `diskpart`/`Format-Volume`, wiping a drive root).
 - **`ask`** — forces human approval for any positively-detected **money / destructive / schema / outbound** action, *even if your settings would have allowed it*.
-- **`defer`** — no opinion; falls back to Claude Code's normal permission flow. This is the path for all reads and anything not positively flagged, so the gate only ever *adds* restriction.
+- **no opinion** — the hook **omits** `permissionDecision` entirely (the documented "no decision" signal; `allow`/`deny`/`ask` are the only spec values). Falls back to Claude Code's normal permission flow — the path for all reads and anything not positively flagged, so the gate only ever *adds* restriction.
 
 It classifies by command/tool **structure**, never by scanning argument text — so `cat
 payment.ts`, `grep -r delete`, and a read-only `aggregate` are *not* gated.
@@ -66,7 +66,7 @@ practical bypass, add the pattern **and a regression test** together.
 
 ## Verify
 ```sh
-node hooks/test-gate.mjs   # 77/77 should pass
+node hooks/test-gate.mjs   # 84/84 should pass
 ```
 The suite covers reads (defer), write-class (ask), catastrophic (deny), the adversarial bypasses
 (read-prefix MCP, `git clean -fdx`, `curl|bash`, encoded commands, interpreter one-liners,

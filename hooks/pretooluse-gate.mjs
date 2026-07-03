@@ -5,7 +5,9 @@
 // Registered via hooks/hooks.json (matcher "*", so it sees EVERY tool call). Claude Code
 // pipes a PreToolUse JSON object on stdin; we answer with exit 0 + JSON on stdout:
 //   { "hookSpecificOutput": { "hookEventName": "PreToolUse",
-//       "permissionDecision": "deny"|"ask"|"defer", "permissionDecisionReason": "..." } }
+//       "permissionDecision": "deny"|"ask", "permissionDecisionReason": "..." } }
+//   For "no opinion" we OMIT permissionDecision entirely (allow/deny/ask are the only spec
+//   values; omitting the field is the documented "no decision → normal flow" signal).
 //
 // DESIGN (deliberate, after adversarial review):
 //   * We NEVER emit "allow". Emitting allow would suppress the user's own permission
@@ -13,9 +15,10 @@
 //       deny  = block outright (only the unambiguously catastrophic).
 //       ask   = force human approval (any positively-detected money/destructive/schema/
 //               outbound ACTION), even if the user's settings would have allowed it.
-//       defer = no opinion → fall back to Claude Code's normal permission flow. This is
-//               the path for all reads and anything we don't positively flag, so we add
-//               restriction without ever removing it.
+//       (no opinion) = omit permissionDecision → Claude Code's normal permission flow. This
+//               is the path for all reads and anything we don't positively flag, so we add
+//               restriction without ever removing it. We deliberately do NOT emit a "defer"
+//               string here — an unrecognized decision value is undefined behavior.
 //   * We classify by command / tool STRUCTURE, never by scanning argument text. Reading a
 //     file called payment.ts or grepping for "delete" is not performing that action.
 //   * Edit/Write/MultiEdit/NotebookEdit are DEFERRED: writing text into a file is not
@@ -36,7 +39,9 @@ function decide(permissionDecision, permissionDecisionReason) {
 }
 const deny = (r) => decide("deny", r);
 const ask = (r) => decide("ask", r);
-const defer = (r) => decide("defer", r || "no gate match — normal permission flow");
+// "No opinion": omit permissionDecision (undefined is dropped by JSON.stringify), leaving just
+// the reason. allow/deny/ask are the only spec values; an invented "defer" string is non-spec.
+const defer = (r) => decide(undefined, r || "no gate match — normal permission flow");
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -120,7 +125,7 @@ function classifyShell(cmd) {
 }
 
 // ── MCP classification (by leaf tool name + input keys, most-dangerous wins) ──
-const LEAF_MONEY = /\b(charge|charges|refund|refunds|transfer|transfers|payout|payouts|payment|payments|capture|withdraw|withdrawal|disburse|debit|void|settle|settlement|chargeback)\b/i;
+const LEAF_MONEY = /\b(charge|charges|refund|refunds|transfer|transfers|payout|payouts|payment|payments|pay|capture|withdraw|withdrawal|disburse|debit|void|settle|settlement|chargeback|wire|remit|ach)\b/i;
 const LEAF_DESTRUCTIVE = /\b(delete|drop|truncate|destroy|purge|wipe|erase|expunge|prune|flush|flushall|flushdb)\b/i;
 const LEAF_OUTBOUND = /\b(send|publish|email|notify|dispatch|broadcast|webhook|sms|deliver|emit|message)\b/i;
 const LEAF_SCHEMA = /\b(migrate|migration|alter|reindex|ddl)\b|\b(create|drop|rename)\s*(index|collection|table|column|database)\b|\b(add|drop)\s*column\b/i;
@@ -128,7 +133,7 @@ const LEAF_WRITE = /\b(insert|update|upsert|replace|modify|write|put|save|create
 // Mutation indicators inside the MCP tool input (e.g. an aggregate with a $out stage, or a
 // generic query/execute tool carrying destructive SQL). Word-shaped tokens are anchored so
 // prose like "dropdown" / "drag-and-drop" in a read call can't trip an approval prompt.
-const INPUT_WRITE = /(\$out|\$merge|\$set|\$unset|bulkWrite|writeConcern|"(deleteMany|insertMany|updateMany|drop)"|\bdelete\s+from\b|\btruncate\s+(table\s+)?[a-z_"]|\bdrop\s+(table|database|schema|collection|index)\b)/i;
+const INPUT_WRITE = /(\$out|\$merge|\$set|\$unset|bulkWrite|writeConcern|"(deleteMany|insertMany|updateMany|drop)"|\bdelete\s+from\b|\binsert\s+into\b|\bupdate\s+[\[\]"\x60\w.]+\s+set\b|\btruncate\s+(table\s+)?[a-z_"]|\bdrop\s+(table|database|schema|collection|index)\b)/i;
 
 function classifyMcp(toolName, toolInput) {
   const leafTail = toolName.split("__").slice(2).join("__") || toolName; // tool segment(s)
@@ -143,6 +148,15 @@ function classifyMcp(toolName, toolInput) {
   return [null, null];
 }
 
+// Most-restrictive verdict from a set of [decision, reason] pairs (deny > ask > no-opinion).
+function strictest(pairs) {
+  for (const level of ["deny", "ask"]) {
+    const hit = pairs.find(([d]) => d === level);
+    if (hit) return hit;
+  }
+  return [null, null];
+}
+
 async function main() {
   const raw = await readStdin();
   if (!raw) return ask("PreToolUse hook could not read the tool call — approve manually.");
@@ -151,23 +165,26 @@ async function main() {
 
   const toolName = String(input?.tool_name ?? "");
   const ti = input?.tool_input ?? {};
+  const cmd = typeof ti.command === "string" ? ti.command
+            : typeof ti.script === "string" ? ti.script : "";
 
-  // Shell tools (Bash, PowerShell, and anything shell-shaped that carries a command).
-  if (/^(Bash|PowerShell|Shell|Sh)$/i.test(toolName) || typeof ti.command === "string" || typeof ti.script === "string") {
-    const cmd = String(ti.command ?? ti.script ?? "");
-    if (cmd) {
-      const [d, reason] = classifyShell(cmd);
-      if (d === "deny") return deny(`Blocked: ${reason}. truestack denies catastrophic, irreversible commands.`);
-      if (d === "ask") return ask(`Approval required: ${reason}. truestack gates this Ask-first action.`);
-    }
-    return defer("shell command not matching a gated pattern");
-  }
-
-  // MCP tools.
+  // MCP tools — checked BEFORE the shell heuristic so an MCP tool that happens to carry a
+  // `command`/`script` field can't dodge leaf-name gating. Classify by BOTH the leaf name and
+  // any embedded command; the most-restrictive verdict wins (so mcp__db__delete_rows is gated
+  // on its name, AND mcp__runner__run "rm -rf /" is still caught by the shell classifier).
   if (/^mcp__/i.test(toolName)) {
-    const [d, reason] = classifyMcp(toolName, ti);
+    const [d, reason] = strictest([classifyMcp(toolName, ti), cmd ? classifyShell(cmd) : [null, null]]);
+    if (d === "deny") return deny(`Blocked: ${reason}. truestack denies catastrophic, irreversible commands.`);
     if (d === "ask") return ask(`Approval required: ${reason}. truestack gates MCP write/money/destructive/outbound calls.`);
     return defer("MCP read/uncertain call — normal permission flow");
+  }
+
+  // Shell tools (Bash, PowerShell, and anything shell-shaped that carries a command).
+  if (/^(Bash|PowerShell|Shell|Sh)$/i.test(toolName) || cmd) {
+    const [d, reason] = classifyShell(cmd);
+    if (d === "deny") return deny(`Blocked: ${reason}. truestack denies catastrophic, irreversible commands.`);
+    if (d === "ask") return ask(`Approval required: ${reason}. truestack gates this Ask-first action.`);
+    return defer("shell command not matching a gated pattern");
   }
 
   // Everything else (Read/Glob/Grep/Edit/Write/MultiEdit/NotebookEdit/WebFetch/Task/...) →
