@@ -32,6 +32,18 @@ the DDL/backfill that performs a purge → **truestack-database-migrations**; th
 nicer request with nothing broken → the builder skill for that layer (**truestack-backend-development** /
 **truestack-react-frontend**).
 
+**Sharpening vs clarifying vs planning:** restating a raw ask as an expert brief at handoff (persona,
+explicit goal, labeled assumptions, checkable criteria) → **truestack-role-prime**; a real ambiguity that
+two readings can't survive → clarify-then-proceed (a contract, not a skill); turning the sharpened intent
+into scope, architecture, and the approval gate → **truestack-architecture-planning**.
+
+**Explain vs investigate vs research:** translating what was just done, or how code already in context
+behaves, into a short beginner-level lesson → **truestack-explain-plain**; building a verified model of a
+shared/unfamiliar artifact or deriving an upgrade path from it → **truestack-reverse-engineering**; a
+"how does X achieve this" question about a third-party system with nothing shared to open →
+**truestack-deep-research**. When comprehension needs investigation first, chain them — reverse-engineer,
+then explain the findings plainly.
+
 ## Canonical chains (run in order)
 - **Backend feature** → truestack-architecture-planning → truestack-backend-development → truestack-quality-control
 - **Frontend feature** → truestack-architecture-planning → truestack-react-frontend → truestack-quality-control
@@ -49,7 +61,7 @@ nicer request with nothing broken → the builder skill for that layer (**truest
 - **Dependency change / supply-chain** → truestack-dependency-management → truestack-backend-development (apply the bump) → truestack-quality-control  *(the scan + SBOM step is encoded in CI via truestack-ci-and-delivery; a consequential new dep or cooldown override goes through truestack-architecture-planning's gate first)*
 - **Privacy / compliance** → truestack-architecture-planning (gate the policy design) → truestack-data-privacy (classification, retention, erasure, consent, audit, breach) → truestack-database-migrations (the purge/erasure DDL + bounded backfill) → truestack-backend-development (consent/audit/erasure code) → truestack-quality-control  *(truestack-observability implements the PII-redaction policy truestack-data-privacy defines; destructive purge/key-destruction also hits the PreToolUse gate in `hooks/`)*
 - **Recurring anything** → wrap the chain with truestack-task-scheduling
-- **Always**: every chain reads truestack-project-memory first; truestack-quality-control gates "done"; the code↔memory tally must balance before anything is called done.
+- **Always**: every chain reads truestack-project-memory first; every handoff is sharpened by truestack-role-prime; truestack-quality-control gates "done"; truestack-explain-plain closes the chain in plain English; the code↔memory tally must balance before anything is called done.
 
 ## Route beyond this set — the mechanics
 - **Discover, don't assume** — confirm the specialist set is actually available (its skills appear

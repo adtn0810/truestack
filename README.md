@@ -1,7 +1,7 @@
 # truestack
 
 A lightweight, **honesty-first** coding skill set for Claude Code — packaged as a **plugin**
-that bundles 21 skills, 8 slash commands, and an MCP integration layer, all behind a single
+that bundles 23 skills, 8 slash commands, and an MCP integration layer, all behind a single
 **`truestack-orchestrate`** router that reads the request, right-sizes it, and dispatches to the right
 skill in the right order. Language-aware backend skills (Express · .NET · Python), a pro React
 frontend skill, multi-agent / multi-session coordination, an always-on honesty contract,
@@ -12,14 +12,15 @@ with process that sizes itself to the work.
 - **`truestack-orchestrate` router** — classifies any request, right-sizes it, runs the canonical chain, and gates everything through `truestack-quality-control`; routes to the best skill even when it lives in another installed set.
 - **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (84-case tested). *Enforced once wired:* automatic with plugin install, a one-time settings merge with drop-in install (step 2 below). The append-only MCP approval log is **skill-directed** (the model writes it under the `truestack-mcp-integration` skill), not hook-enforced.
 - **Honesty, machine-checked** — an always-on grounding contract, a code↔memory reconciliation tally, and auto-research of current-fact decisions from authoritative sources.
-- **Full lifecycle** — plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation.
+- **Full lifecycle** — prompt sharpening · plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation · plain-English explanation.
 - **Self-measuring** — ships its own deterministic skill lint + a behavioral routing eval, both run in CI.
 
-## The skills (21)
+## The skills (23)
 
 | Skill | Fires on | Job |
 |---|---|---|
 | `truestack-orchestrate` | **first, on any non-trivial request** | front-door router: ground → right-size → route to the right skill(s) → run the canonical chain → gate through `truestack-quality-control` |
+| `truestack-role-prime` | every `truestack-orchestrate` handoff / "sharpen this prompt" / "adopt an expert persona" | turn a raw request into a sharpened expert brief — matching persona, explicit goal, labeled assumptions — before any skill runs on it |
 | `truestack-project-memory` | first task / "remember" / stale facts | study the repo, maintain committed memory + the always-on contracts (honesty, communication, clarify, boundaries, tool-use) |
 | `truestack-architecture-planning` | designing/scoping new work | right-size → clarify (loops) → architecture → testable criteria → tasks (parallel vs sequential) → gate risk |
 | `truestack-backend-development` | implementing backend | match/recommend stack (Express · .NET · Python) → accurate, load-safe code; **build loop** to acceptance, or an honest score |
@@ -40,6 +41,7 @@ with process that sizes itself to the work.
 | `truestack-reverse-engineering` | shared code/reference · "how does this work" · "adopt this" · upgrade from a reference | verified model (verified vs inferred) → transferable idea → gated, license-aware upgrade path |
 | `truestack-task-scheduling` | "every day / weekly / remind me / run at" | self-contained job spec (trigger · run prompt · delivery · failure policy) wired to the host scheduler |
 | `truestack-skill-evaluation` | "score / rate / audit / improve" a skill | static lint + judge + behavioral trigger test → scorecard with fixes; its own quality gate |
+| `truestack-explain-plain` | after a build/fix/design lands / "explain this" / "what does this do" / "I don't get it" | explain finished work or existing behavior in short, beginner-friendly plain English — the lesson is the deliverable |
 
 ## Slash commands (8)
 
@@ -153,7 +155,7 @@ Finally, merge the `truestack/.mcp.example.json` entries you need into your proj
 **Drop-in, one-time copy (simplest; re-copy after each `git pull`):**
 ```sh
 git clone <your-fork-url> truestack
-cp -r truestack/skills/*   ~/.claude/skills/      # the 21 truestack-* skills
+cp -r truestack/skills/*   ~/.claude/skills/      # the 23 truestack-* skills
 cp -r truestack/commands/* ~/.claude/commands/    # the 8 /truestack-* slash commands
 ```
 Then do *Step 2 — wire the hooks* above (copying files never wires hooks).

@@ -4,9 +4,24 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.4] - 2026-07-10
 
-External-audit fixes (independent skill-eval pass; static lint + 5-agent judge + trigger + shipping-code review).
+Adds two new skills — `truestack-role-prime` and `truestack-explain-plain` — wires both into the
+router (growing the set from 21 skills to 23), and ships the external-audit fixes (independent
+skill-eval pass; static lint + 5-agent judge + trigger + shipping-code review).
+
+### Added
+- **`truestack-role-prime`** — pre-dispatch prompt sharpening: prepends a persona keyed off the
+  router's destination skill, restates the goal explicitly, and labels every assumption with
+  checkable acceptance criteria. Runs automatically at every `truestack-orchestrate` handoff;
+  wired into the handoff discipline, route table, and Always lines.
+- **`truestack-explain-plain`** — beginner-friendly plain-English explanation of finished work or
+  existing behavior, shipped as its own deliverable rather than a footer. Fires automatically
+  after every build, fix, or design task (sized to the change — full lesson down to two plain
+  sentences), and on any explain/why/confusion ask. Wired into `truestack-orchestrate`'s route
+  table, Explain-it-simply close, and Always lines; the Explain-vs-investigate-vs-research
+  boundary split is documented in `references/routing.md`.
+- **9 new trigger fixtures** (45 total) covering both skills' firing and non-firing cases.
 
 ### Security / tooling
 - **PreToolUse gate no longer emits a non-spec `"defer"` decision.** The no-opinion path now
@@ -80,7 +95,7 @@ Self-audit release: the set was scored by its own `truestack-skill-evaluation` (
 - CI: all actions SHA-pinned (real commit SHAs), `push` filtered to `main`, gitleaks given
   `GITHUB_TOKEN`, Claude CLI install pinned.
 
-
+## [0.0.2] - 2026-06-29
 
 ### Fixed
 - `truestack-orchestrate`'s description failed to parse in Claude Code's skill loader: an unquoted

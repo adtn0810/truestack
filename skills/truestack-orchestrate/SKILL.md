@@ -61,6 +61,8 @@ Match the request to its skill — one or more. When several apply, run the chai
 | A shared reference/artifact — "how does this work", "reverse engineer this", "adopt/port this pattern", upgrading from a reference | **truestack-reverse-engineering** |
 | "Every day / weekly / remind me / run at / recurring" | **truestack-task-scheduling** |
 | "Score / rate / audit / evaluate / improve" a skill or skill set | **truestack-skill-evaluation** |
+| "Sharpen / enrich / rephrase this prompt" · "adopt an expert persona" — a raw ask needs an expert brief | **truestack-role-prime** (also runs automatically at every handoff) |
+| "Explain this / what does this do / teach me / in simple terms" — a plain-English walkthrough is the deliverable | **truestack-explain-plain** |
 
 If nothing fits cleanly, say so and ask one short clarifying question — don't force a route.
 
@@ -70,20 +72,20 @@ API vs build vs system design…) or needs a multi-step chain beyond the common 
 catalog. Don't guess a seam from memory when the reference defines it.
 
 ## Canonical chains (most common; full catalog in `references/routing.md`)
-- **Backend feature** → truestack-architecture-planning → truestack-backend-development → truestack-quality-control
-- **Frontend feature** → truestack-architecture-planning → truestack-react-frontend → truestack-quality-control
+- **Backend / frontend feature** → truestack-architecture-planning → the builder skill for that layer → truestack-quality-control
 - **Bug fix** → truestack-root-cause-debugging → truestack-quality-control
 - **Research → decision** → truestack-deep-research → truestack-architecture-planning
-- **Recurring anything** → wrap the chain with truestack-task-scheduling
-- **Always**: every chain reads truestack-project-memory first; truestack-quality-control is the gate before "done"; and code and project memory must reconcile — the tally balances — before anything is called done.
+- Migration, deploy, CI/CD, security, API-contract, dependency, privacy, observability, parallel-build
+  and recurring chains → **`references/routing.md`** — don't reconstruct a chain from memory when the
+  catalog defines it.
+- **Always**: every chain reads truestack-project-memory first; every handoff is sharpened by truestack-role-prime; truestack-quality-control is the gate before "done"; truestack-explain-plain closes the chain in plain English; and code and project memory must reconcile — the tally balances — before anything is called done.
 
 ## Route beyond this set — pick the best skill, ours or not
-This set is the general, governed spine, not the deepest skill for every domain. When a task
-needs single-domain depth a specialist set installed in this environment covers better, let the
-specialist do the domain work — **discover, don't assume** it's installed — and keep truestack's
-wrapper around the result: the PreToolUse gate still gates destructive/money/outbound calls,
-**truestack-quality-control** still gates "done", and the honesty contract + code↔memory tally still hold.
-Honesty over territory: use the better tool (details in `references/routing.md`).
+This set is the general, governed spine, not the deepest skill for every domain. When a specialist
+set installed in this environment covers a domain better, let it do the domain work — **discover,
+don't assume** it's installed — and keep truestack's wrapper (the PreToolUse gate, the QC gate, the
+Always-line contracts) around the result. Honesty over territory: use the better tool — mechanics
+in `references/routing.md`.
 
 ## Single agent or parallel?
 Default **single-agent** — coordination overhead and human review are the real costs, and most
@@ -93,15 +95,20 @@ genuinely independent tasks, the work is big enough to pay the overhead, and sha
 
 ## Handoff discipline
 - Route, then let the destination skill own its method — don't re-explain or re-run its steps here.
-- Pass forward what it needs: the goal, the acceptance criteria, relevant memory, prior results.
+- Pass forward what it needs: the goal, the acceptance criteria, relevant memory, prior results —
+  sharpened first by **truestack-role-prime** (matching persona + explicit goal + labeled assumptions +
+  checkable criteria; intent unchanged). A handoff that echoes a vague ask verbatim is a defect.
 - After each step, check the result against its acceptance criteria before moving to the next. If
   a step fails, loop **within** that skill (build loop / verify-or-loop) — don't restart the chain.
-- **Nothing is "done" until truestack-quality-control passes**, every acceptance criterion maps to evidence, and the code↔memory tally reconciles (memory updated to match the change).
+- **Nothing is "done" until truestack-quality-control passes** and every acceptance criterion maps to evidence (the full done-conditions live on the Always line above).
 
 ## Explain it simply
 Open with the route in one plain line — what you'll do and in what order ("Plan the schema, build
 the endpoint, then QC it"). Get a yes before any high-risk or parallel dispatch. Report each
-step's result in one line. If you abstained or couldn't route cleanly, say so plainly.
+step's result in one line. If you abstained or couldn't route cleanly, say so plainly. Every
+task closes with **truestack-explain-plain** — automatically, no request needed: a plain-English
+explanation of what was done and why, sized to the change (full lesson for substantial work, two
+plain sentences for a trivial one). It also fires whenever the user asks what/why or sounds confused.
 
 ## Honest exit
 Report against the goal, not the effort. If the chain stalls — a blocked dependency, a conflicting

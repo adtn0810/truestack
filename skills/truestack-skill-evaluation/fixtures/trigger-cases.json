@@ -36,5 +36,16 @@
   { "prompt": "add a redaction processor to the OTel collector so PII never reaches the logs", "expect": "truestack-observability", "notExpect": "truestack-data-privacy" },
   { "prompt": "write the Dockerfile and nginx config to run this app on my VPS", "expect": "truestack-deploy-and-runtime", "notExpect": "truestack-ci-and-delivery" },
   { "prompt": "is my login and password hashing setup secure, and how should we store user data safely?", "expect": "truestack-application-security", "notExpect": "truestack-data-privacy" },
-  { "prompt": "from now on, always run the tests after every edit", "notExpect": "truestack-task-scheduling" }
+  { "prompt": "from now on, always run the tests after every edit", "notExpect": "truestack-task-scheduling" },
+
+  { "prompt": "sharpen this prompt before you start the work", "expect": "truestack-role-prime" },
+  { "prompt": "assign a persona and enrich the prompt before handing off the task", "expect": "truestack-role-prime" },
+  { "prompt": "rephrase my request the way an expert would ask it", "expect": "truestack-role-prime" },
+  { "prompt": "fix the login thing", "notExpect": "truestack-role-prime" },
+
+  { "prompt": "explain what you just did in plain english", "expect": "truestack-explain-plain" },
+  { "prompt": "break it down for me in simple terms so I can learn", "expect": "truestack-explain-plain" },
+  { "prompt": "what does this function do, teach me like I'm a junior dev", "expect": "truestack-explain-plain" },
+  { "prompt": "study this unfamiliar codebase and build a verified model of how it works", "expect": "truestack-reverse-engineering", "notExpect": "truestack-explain-plain" },
+  { "prompt": "how does Stripe handle idempotency keys?", "notExpect": "truestack-explain-plain" }
 ]

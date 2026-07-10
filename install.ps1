@@ -15,7 +15,7 @@ $skillsDir = Join-Path $claude "skills"
 $commandsDir = Join-Path $claude "commands"
 New-Item -ItemType Directory -Force $skillsDir, $commandsDir | Out-Null
 
-# The 21 canonical skill names (prefixed) — used to detect stale un-prefixed copies.
+# The 23 canonical skill names (prefixed) — used to detect stale un-prefixed copies.
 $repoSkills = Get-ChildItem (Join-Path $repo "skills") -Directory -Filter "truestack-*"
 $stale = @()
 foreach ($s in $repoSkills) {
