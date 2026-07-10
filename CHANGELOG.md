@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **`install.ps1` re-runs no longer hang non-interactively.** Refreshing an existing junction
+  used `Remove-Item`, which prompts to recurse on a directory reparse point and dies in
+  NonInteractive mode (first-run installs never hit the branch, so the bug only surfaced on the
+  documented re-run-after-git-pull flow). Junction removal now uses `Directory.Delete(link,
+  $false)` — removes the link, never prompts, never touches the target.
+
 ## [0.0.4] - 2026-07-10
 
 Adds two new skills — `truestack-role-prime` and `truestack-explain-plain` — wires both into the

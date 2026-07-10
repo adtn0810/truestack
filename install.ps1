@@ -36,7 +36,9 @@ if ($stale.Count -or ($oldCmds -and $oldCmds.Count)) {
 
 foreach ($s in $repoSkills) {
   $link = Join-Path $skillsDir $s.Name
-  if (Test-Path $link) { Remove-Item $link -Force -Recurse:$false -Confirm:$false }
+  # Remove-Item on a junction prompts to recurse (hangs non-interactive re-runs);
+  # Directory.Delete removes just the link and never touches the target.
+  if (Test-Path $link) { [System.IO.Directory]::Delete($link, $false) }
   New-Item -ItemType Junction -Path $link -Target $s.FullName | Out-Null
 }
 Get-ChildItem (Join-Path $repo "commands") -Filter "truestack-*.md" | ForEach-Object {
