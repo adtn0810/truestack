@@ -2,11 +2,14 @@
 name: truestack-architecture-planning
 description: Plan the architecture and data flow for a feature, service, or
   system before any implementation code is written. Use this whenever the user is
-  designing, scoping, or starting to build something new (backend or frontend) — even when
-  they just say "build X" or "how should I structure this" without saying "plan".
-  Owns the planning step that precedes any implementation code. Treats the request as
-  intent to be clarified, picks the right architecture per project, sizes the process
-  to the work, and gates risky work behind approval.
+  designing, scoping, or starting to build something new (backend or frontend) — even
+  for a bare "build X" or "how should I structure this". This skill owns the design
+  step wherever the chain starts — truestack-orchestrate enters first on requests that
+  also need implementation or review and dispatches here, and the implementation
+  itself belongs to truestack-backend-development once the plan is approved. Treats the
+  request as intent to be clarified, picks the right architecture per project, sizes
+  the planning ceremony to the work, and gates risky designs behind pre-work approval
+  (orchestrate's gate is the post-work quality-control pass).
 ---
 
 # truestack-architecture-planning
@@ -22,7 +25,8 @@ Boundaries); consult `.ai/memory/` for deeper detail. If no memory exists yet, r
 
 ## Right-size the work (do this first)
 Match the ceremony to the size of the change — heavy process on a small task is its own
-failure mode:
+failure mode. (These are the same tiers `truestack-orchestrate` right-sizes with — if the
+two texts ever disagree, orchestrate's definitions are canonical.)
 - **Trivial** (rename, copy tweak, one-liner) **and unambiguous**: skip planning; go straight to `truestack-backend-development` + `truestack-quality-control`. If even a small ask is ambiguous, clarify first (see step 6).
 - **Small** (contained, clear intent): a short plan — goal, approach, testable criteria. Skip interpretations and task breakdown.
 - **Substantial** (new feature/service, several moving parts): the full flow below.
@@ -39,8 +43,8 @@ plainly before planning — don't design around a misunderstanding to be agreeab
 ## 2. Choose the architecture — per project, with a reason
 Don't default to a favorite, and don't choose from recall: for any decision that turns on **current**
 facts — framework/library support, a version's capabilities, an enterprise pattern's tradeoffs —
-**auto-research it first** from authoritative sources (`context7` / official docs), per the always-on
-contract. Pick and justify:
+**auto-research it first** — via `context7` if that MCP server is connected, otherwise
+official docs via web search — per the always-on contract. Pick and justify:
 - **Modular monolith** — default for a self-hosted single server; one deployable, clear internal boundaries. Use unless there's a concrete reason not to.
 - **Layered / hexagonal** — when domain logic is complex enough that isolating it from I/O pays off.
 - **DDD / Clean** — only for genuinely intricate, long-lived domains; name the benefit that justifies the ceremony.
@@ -64,11 +68,15 @@ implemented and checked on its own. This gives `truestack-backend-development` a
 instead of landing one big unreviewable change. For larger work, mark which tasks are
 **independent (parallelizable)** vs **dependent (sequential)**, and define any **shared
 contracts** (interfaces, schema, API shapes) up front — they must exist before parallel
-implementation. Hand a parallelizable breakdown to `truestack-agent-coordination`.
+implementation. Those split-and-contracts rules are owned by `truestack-agent-coordination`
+(its §1) — keep them in sync from there, and hand it any parallelizable breakdown.
 
 ## 6. Clarify ambiguity — loop until clear
 If more than one reasonable build would satisfy the request, clarify before committing to a
-plan — don't guess on a coin-flip. Each round:
+plan — don't guess on a coin-flip. First check the handoff brief: a question
+`truestack-prompt-optimizer` already asked and got answered is settled, and a gap it carries
+under `Assumptions (unconfirmed):` gets confirmed as that assumption, not reopened as a new
+round — never interrogate the user twice for the same fact. Each round:
 - Ask **at most 3 blocking questions** — only ones whose answer changes the plan or output — each with a **recommended default** for when the user is unsure.
 - When answers arrive, re-check. If they open a **new** blocking fork, ask one more short round; if nothing blocking remains, stop and proceed.
 

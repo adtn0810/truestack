@@ -21,9 +21,12 @@ over cleverness, every breaking change split across deploys.
 First, read project memory — `CLAUDE.md` is auto-loaded (Principles + Boundaries); consult
 `.ai/memory/` for the DB engine, migration tool, and recorded commands. If none exists, run
 `truestack-project-memory`. This is **ask-first, high-risk** work: route the plan through
-`truestack-architecture-planning`'s approval gate **before** writing any migration, and remember the
-PreToolUse gate in `hooks/` makes `DROP`/`TRUNCATE`/destructive DDL a hard stop — it forces a
-human yes *before* the command runs, even if settings would allow it. See `hooks/README.md`.
+`truestack-architecture-planning`'s approval gate **before** writing any migration. Then **verify the
+PreToolUse gate before relying on it** — check it is registered in the active hooks config. If
+wired, it hard-stops `DROP`/`TRUNCATE`/destructive DDL for a human yes *before* the command
+runs, even if settings would allow it; if not wired, obtain that explicit human yes yourself
+before any destructive statement. (Details: `hooks/README.md` at the truestack repo root, when
+that repo is present — a standalone copy of this skill won't have it.)
 
 **Where this skill sits:** it owns the migration *artifact* — reversible up/down DDL, the backfill,
 the expand/contract sequencing. The data-access code that uses the new schema is
@@ -42,31 +45,25 @@ The phase boundary is your safe checkpoint: if anything looks wrong you **pause 
 on the prior phase** instead of rolling back under fire.
 
 ## 2. Lock + timeout discipline (the single most-missed safeguard)
-Before any DDL, set a short timeout and retry — even seasoned DBAs skip this (SQL below is
-Postgres; map per engine — MySQL uses `lock_wait_timeout`):
-```sql
-SET lock_timeout = '2s'; SET statement_timeout = '...'; <DDL>;
-```
-Wrap it in a **retry loop with exponential backoff + jitter**. The real danger: a DDL waiting
-for an `ACCESS EXCLUSIVE` lock queues *behind* a long-running query, and then every later
-query — plain `SELECT`s included — queues behind the DDL. One stuck `ALTER` cascades into a
-full app freeze, and on a single box that is a total outage. **Pre-check** for transactions
-older than ~1 min before running. A failed-and-retried migration always beats an outage.
+Before any DDL, set a short **lock timeout** and wrap the attempt in a **retry loop with
+exponential backoff + jitter** — even seasoned DBAs skip this (exact timeout SQL per engine →
+`references/engines.md`). The real danger: a DDL waiting on an exclusive lock queues *behind*
+a long-running query, and then every later query — plain `SELECT`s included — queues behind
+the DDL. One stuck `ALTER` cascades into a full app freeze, and on a single box that is a
+total outage. **Pre-check** for transactions older than ~1 min before running. A
+failed-and-retried migration always beats an outage.
 
 ## 3. Know instant DDL from a full-table rewrite — rewrite the dangerous ones
-- **Instant (metadata-only):** add a nullable column; add a constant default (Postgres 11+).
-- **Dangerous (rewrites/scans, full lock):** `NOT NULL` directly, a VOLATILE default, a type
-  change, an inline `UNIQUE`/`FK`/`CHECK`.
-- **Safe rewrites:** add nullable → backfill → enforce `NOT NULL` via a `CHECK ... NOT VALID`
-  then `VALIDATE` (validate takes a weak lock that doesn't block reads/writes); add `FK`
-  `NOT VALID` then validate separately; build indexes with `CREATE INDEX CONCURRENTLY`.
-
-Enforce this **mechanically** with a migration linter (Squawk for Postgres) in CI / pre-commit
-— humans miss it every time. `CONCURRENTLY` **cannot run inside a transaction**, yet most
-frameworks wrap each migration in one by default: disable the wrapper for that migration
-(`disable_ddl_transaction` / non-transactional flag), and make it **idempotent about a leftover
-INVALID index** (a failed concurrent build leaves one that must be dropped before retry). This
-is the single highest-frequency mistake in real migration PRs.
+Some DDL is **metadata-only and instant**; some **rewrites or scans the whole table under a
+full lock** — and the split is engine-specific (per-engine classification + safe-rewrite
+recipes, including the online-index-build traps → `references/engines.md`). Engine-neutral rules:
+- Never enforce `NOT NULL`, a type change, or an inline `UNIQUE`/`FK`/`CHECK` directly on a
+  big live table — stage it: add nullable → backfill → validate/enforce as a separate
+  weak-lock step.
+- Build indexes **online**, and make the migration **idempotent about a half-built leftover**
+  from a failed attempt — the single highest-frequency mistake in real migration PRs.
+- Enforce all of this **mechanically** with a migration linter in CI / pre-commit — humans
+  miss it every time.
 
 ## 4. Backfill in idempotent, bounded batches — never one giant UPDATE
 A single `UPDATE 50M rows` holds a lock and bloats exactly like the DDL you were avoiding, and
@@ -102,16 +99,17 @@ old column. So:
   switch + drop-old.
 
 ## On this single server
-The MySQL online-DDL tools (trigger-based pt-online-schema-change, binlog-based gh-ost) are
-built for fleets with replicas and load headroom — usually **not** your path here. Your toolkit is native transactional DDL
-+ expand/contract + throttled batched backfills, all on the one box that also serves users.
-So: schedule heavy backfills for low-traffic windows; keep **disk headroom** (rewrites and
-`CONCURRENTLY` temporarily duplicate the table/index — a "safe" migration can still fill the
-disk and crash the box); and lean doubly on the lock-timeout + retry discipline and the
-"expand is always non-breaking" rule, because there is no replica to fail to.
+Fleet-grade online-DDL tools (MySQL's pt-online-schema-change, gh-ost — notes in
+`references/engines.md`) assume replicas and load headroom you don't have — usually **not**
+your path here. Your toolkit is native transactional DDL + expand/contract + throttled batched
+backfills, all on the one box that also serves users. So: schedule heavy backfills for
+low-traffic windows; keep **disk headroom** (rewrites and online index builds temporarily
+duplicate the table/index — a "safe" migration can still fill the disk and crash the box); and
+lean doubly on the lock-timeout + retry discipline and the "expand is always non-breaking"
+rule, because there is no replica to fail to.
 
 ## Gate, then hand off
-Require, before any risky migration runs: a CI migration linter (Squawk) that blocks dangerous
+Require, before any risky migration runs: a CI migration linter that blocks dangerous
 DDL, a PR sign-off label, a written rollback/forward-recovery plan, a fresh backup/PITR
 checkpoint taken **immediately before**, and a confirmation of which app versions run
 concurrently. **Dry-run the exact migration against a production-sized copy** to measure real

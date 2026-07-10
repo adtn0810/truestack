@@ -1,15 +1,17 @@
 ---
 name: truestack-ci-and-delivery
 description: Set up CI/CD and ship safely to a self-hosted server — pipeline stages (lint,
-  type-check, test, build), required status checks gating PRs, SHA-pinned GitHub Actions,
-  dependency/Docker caching, least-privilege workflow permissions and secrets, semver +
-  CHANGELOG releases, and health-gated deploy with rollback. Use whenever the user says
-  "set up CI/CD", "GitHub Actions workflow", "lint and test on PR", "required status
+  type-check, test, build), SHA-pinned Actions, least-privilege workflow permissions and
+  GitHub Actions secrets (runtime secrets/.env on the server belong to
+  truestack-deploy-and-runtime), semver + CHANGELOG releases, and health-gated deploy with
+  rollback. Use whenever the user says "set up CI", "set up CI/CD",
+  "GitHub Actions workflow", "lint and tests on PR", "required status
   checks", "branch protection", "merge queue", "pin actions", "SHA pin", "workflow
-  permissions", "GITHUB_TOKEN", "OIDC", "cache dependencies", "Docker layer caching",
-  "release automation", "semantic versioning", "bump the version", "generate changelog",
-  "tag a release", "conventional commits", "the CI pipeline that ships a release to
-  production", "health-gated deploy step", "rollback in CI", "smoke test before traffic", or
+  permissions", "GITHUB_TOKEN", "OIDC (keyless cloud/deploy credentials for
+  workflows)", "cache dependencies", "Docker layer caching", "release automation",
+  "semantic versioning", "bump the version", "generate changelog", "tag a release",
+  "conventional commits", "the CI pipeline that ships a release to production",
+  "health-gated deploy step", "rollback in CI", "smoke test before traffic", or
   "sequence a migration step in the deploy".
 ---
 
@@ -57,7 +59,7 @@ actually running**. Hand the pre-merge depth (test review, six-axis review, safe
 
 ## 3. Supply chain — pin, then wait
 - **SHA-pin every third-party action** to the full 40-char commit SHA, never `@v4` / `@main`. Tags are mutable: real compromises (tj-actions in 2025 among others) rewrote tags out from under pinned-by-tag users — auto-research a current example before citing one. Pin your **own reusable workflows** too.
-- **Pinning is necessary but not sufficient.** Add a **7–14 day cooldown** before adopting a new SHA — most supply-chain compromises are detected within days of publication, so the delay catches the bulk of them. Let **Dependabot** propose the pin bumps; you review and age them.
+- **Pinning is necessary but not sufficient.** New SHAs need a **7–14 day cooldown** before adoption — most supply-chain compromises are detected within days of publication, so the delay catches the bulk of them. This skill sets the **initial SHA pins** and wires the pipeline stage that enforces the policy; the ongoing bump-and-cooldown bot policy (Renovate/Dependabot config — the github-actions ecosystem included — plus app deps, CVEs, SBOMs) is `truestack-dependency-management`.
 
 ## 4. Least-privilege permissions & secrets
 - Default `permissions: contents: read` at the **workflow** level, then grant the minimum extra scope **per job** — only the release job gets `contents: write`, only a PR-comment job gets `pull-requests: write`. The legacy read/write default means one compromised action can push to the repo.
@@ -87,16 +89,13 @@ the cutover); **authoring** it — reversible up/down, idempotent batched backfi
 discipline — is `truestack-database-migrations`.
 
 ## 8. Deploy — health-gated, rollback in seconds
-Make the cutover automatic and reversible:
-1. Start the new container (new "color") from the immutable digest.
-2. Run a **health check + smoke test against it before any traffic** is switched.
-3. Only on success, flip the reverse proxy (`nginx -s reload` drains in-flight requests).
-4. Keep the **old container warm** for a drain window, so rollback is a sub-second proxy flip back to the previous digest — not a rebuild.
-5. Wire the deploy script to **auto-revert to the last known-good digest** if the post-switch health check fails.
-
-The *mechanics* of that cutover — how the box achieves no-downtime (SIGTERM drain, liveness vs
-readiness, the keep-old-color runbook) — are owned by `truestack-deploy-and-runtime`; this skill owns the
-CI step that ships it the exact immutable digest and gates go/no-go.
+The pipeline's deploy step ships the exact immutable digest and owns **go/no-go**: a health
+check + smoke test against the new container **before any traffic switches**, and automatic
+revert to the last known-good digest when the post-switch check fails. The cutover sequence
+itself — colors, digest recording, proxy flip, `nginx -t`, drain windows, SIGTERM/readiness
+mechanics — is **`truestack-deploy-and-runtime`**'s runbook (its blue/green atomic-swap and
+idempotent-runbook sections): execute that, don't re-derive it here — a second copy of a
+runbook only exists to drift.
 
 ## 9. Close the loop
 When the pipeline changes a recorded command, deploy step, branch rule, or release process,
@@ -108,7 +107,4 @@ a completion score rather than declaring a done you can't prove (honesty contrac
 
 ## Explain it simply
 Say it in one plain line: "CI checks your code on every PR; release tags a version; deploy
-swaps in the new container only if it's healthy, and flips back instantly if it isn't." Pin
-actions because a tag can be rewritten under you. Build the image once so the thing you tested
-is the thing that ships. Migrate so the old code still works during the swap. Always leave a
-one-flip way back.
+swaps in the new container only if it's healthy, and flips back instantly if it isn't."

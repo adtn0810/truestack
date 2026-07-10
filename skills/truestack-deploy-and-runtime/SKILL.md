@@ -2,13 +2,16 @@
 name: truestack-deploy-and-runtime
 description: Package, deploy, and run a self-hosted app on a single VPS without dropping
   requests. Use whenever the user is writing a Dockerfile or docker-compose for production,
-  shrinking an image / multi-stage build, running a container as non-root, adding a
-  healthcheck / liveness / readiness endpoint, fixing graceful shutdown / SIGTERM / dropped
-  requests on deploy / stop_grace_period / a SIGKILLed container, putting nginx in front of
-  the app, setting up TLS / HTTPS / certbot / Let's Encrypt / SSL renewal, doing a
-  zero-downtime or blue-green deploy / reload without 502s, running docker compose under
-  systemd so it survives reboot, injecting secrets / env / .env, or writing a deploy and
-  rollback runbook. Triggers on "deploy to my VPS / one box", "my deploy causes downtime".
+  shrinking an image / multi-stage build (image size/contents — CI build speed / Docker
+  layer caching stays with truestack-ci-and-delivery), running a container as non-root,
+  adding a container/compose healthcheck or the liveness/readiness endpoint a deploy gates
+  on (/healthz, /readyz), fixing graceful shutdown / SIGTERM / dropped requests on deploy /
+  stop_grace_period / a SIGKILLed container, putting nginx in front of the app, setting up
+  TLS / HTTPS / certbot / Let's Encrypt / SSL renewal, doing a zero-downtime / blue-green
+  deploy / reload without 502s, running docker compose under systemd to survive reboot,
+  injecting secrets / env / .env, or writing the on-box deploy and rollback runbook (the CI
+  workflow that triggers it is truestack-ci-and-delivery). Triggers on "deploy to my VPS /
+  one box", "my deploy causes downtime".
 ---
 
 # truestack-deploy-and-runtime

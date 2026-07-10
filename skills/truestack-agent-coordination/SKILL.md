@@ -2,7 +2,8 @@
 name: truestack-agent-coordination
 description: Coordinate multiple agents and multiple sessions on the same repo without
   overwriting or colliding with each other. Use whenever work is big enough to split across
-  parallel agents, when running research or planning as a fan-out of sub-agents, or when
+  parallel agents, when a research or planning task is explicitly split across parallel
+  sub-agents (the research content itself belongs to truestack-deep-research), or when
   continuing work another session started. Covers task decomposition, worktree isolation, a
   shared task ledger, and the merge protocol.
 ---
@@ -53,16 +54,10 @@ criteria; if one fails, **re-dispatch with corrections**, don't restart. Run `tr
 integrated result, then clean up worktrees.
 
 ## Team presets (named starting points)
-Don't re-derive a team each run — start from a preset, then trim. Each defines roles, parallel vs
-sequential, and merge order; all still obey isolation (worktrees) + the ledger. Right-size first —
-a preset is a starting point, not a mandate. Caps still apply (2–3 to start).
-- **review** — read-only reviewers in parallel: security · performance · architecture · tests → synthesize by severity → `truestack-quality-control`. (No isolation; read-only.)
-- **debug** — 3 hypothesis agents probe in parallel (per `truestack-root-cause-debugging`); first evidence-confirmed root cause wins; one fixer applies the fix + regression test.
-- **feature** — contracts first (schema/API), then parallel **backend (`truestack-backend-development`) ∥ frontend (`truestack-react-frontend`)**, then tests; sequential merge backend → frontend → tests.
-- **security** — parallel: OWASP/injection · authn/authz · secrets/deps · MCP-governance; gate on Critical before merge.
-- **migration** — one owned migration stream (Ask-first) + a verifier stream (correctness + rollback). **Never** parallel writers on a migration.
-- **research** — read-only `truestack-deep-research` fan-out; cross-verify findings against each other before acting.
-Full role/merge templates → `references/coordination.md`.
+Don't re-derive a team each run — start from a preset, then trim; a preset is a starting
+point, not a mandate, and all still obey isolation (worktrees) + the ledger. Presets:
+**review · debug · feature · security · migration · research** — full role/isolation/merge
+templates → `references/coordination.md`.
 
 ## Multi-session continuity
 A later session resumes from the committed memory + the task ledger + result/status files —

@@ -2,8 +2,8 @@
 name: truestack-task-scheduling
 description: Set up work that runs automatically later or on a recurring cadence — a daily
   check, a weekly report, a periodic sync, a deferred run — instead of doing it once now.
-  Use whenever the user says "every day", "each morning", "weekly", "remind me", "run this
-  at", or wants a task to recur or fire in the future. (A standing behavior rule — hooks or
+  Use whenever the user says "every day", "each morning", "weekly", "nightly", "cron",
+  "schedule this", "remind me", "run this at", or wants a task to recur or fire in the future. (A standing behavior rule — hooks or
   settings config — is not a schedule.) Produces a self-contained job spec (trigger, the
   exact prompt the run executes, delivery, and failure policy) and wires it to the host's
   scheduler.

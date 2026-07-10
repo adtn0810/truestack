@@ -1,16 +1,18 @@
 ---
 name: truestack-application-security
-description: Design and harden the security of a self-hosted app — authentication (sessions vs
-  JWT, OAuth2/OIDC, MFA, passkeys/WebAuthn), authorization (RBAC/ABAC, least privilege,
-  deny-by-default, IDOR/BOLA/broken-access-control), the OWASP Top 10 (injection, broken
-  access control, SSRF, security misconfiguration), input validation + context-aware output
-  encoding (XSS/SQLi/command injection), CSRF, password/credential storage (argon2id/bcrypt),
-  secrets management, security headers/CSP/HSTS, and lightweight STRIDE threat modeling. Use
-  whenever the user asks "is this secure" / "secure this app" / "security review", builds a
-  login / sign-in / sign-up / auth flow, weighs session vs JWT, adds MFA/2FA/passkeys, sets up
-  RBAC/roles/permissions/access control, mentions IDOR/SSRF/CSRF/XSS/SQLi/injection, hashes
-  passwords, manages secrets/API keys/.env, sets CSP/security headers, threat-models / sizes an
-  attack surface, or asks how to store user data safely. The DESIGN discipline.
+description: Design and harden the security of a self-hosted app — authentication (OAuth2/OIDC,
+  MFA, passkeys/WebAuthn), authorization (RBAC/ABAC, deny-by-default,
+  IDOR/BOLA/broken-access-control), the OWASP Top 10 (injection, SSRF, misconfiguration), input
+  validation + output encoding, CSRF, password/credential storage (argon2id/bcrypt), security
+  headers/CSP/HSTS, and STRIDE threat modeling. Use whenever the user
+  asks "is this secure" / "secure this app" / "security review", builds a login / sign-in /
+  sign-up / OIDC auth flow, weighs session vs JWT, adds MFA/2FA/passkeys, sets up
+  RBAC/roles/permissions, mentions
+  IDOR/SSRF/CSRF/XSS/SQLi/injection, hashes passwords, manages the app's runtime secrets/API
+  keys/.env (not CI workflow or deploy-pipeline secrets), sets CSP/security headers,
+  threat-models / sizes an attack surface, or asks how to store passwords or credentials safely
+  (storage, retention, or encryption-at-rest of PII/personal data routes to
+  truestack-data-privacy). The DESIGN discipline.
 ---
 
 # truestack-application-security
@@ -50,9 +52,11 @@ while `truestack-dependency-management` owns the ongoing dependency **policy/lif
 `truestack-architecture-planning` does **system** design. State which seam you're on and stay on it.
 
 ## 1. Authorization: deny by default, on the server, scoped to the subject
-Broken Access Control is currently the #1 risk (OWASP A01 in the present Top 10 — confirm the live
-ranking, don't quote it from memory; found in ~100% of tested apps). SSRF is a **separate** category (A10:2021), not folded into A01.
-Default-deny every route, and derive the subject from the **session/token, never from request input**.
+Broken Access Control is currently the #1 risk (A01:2021 — confirm the live ranking, don't quote
+it from memory; found in ~100% of tested apps). SSRF was its own category in the 2021 list
+(A10:2021); recent revisions fold it into Broken Access Control — verify the current list before
+citing any number. Default-deny every route, and derive the subject from the **session/token,
+never from request input**.
 - **IDOR/BOLA is the failure most teams miss.** Any time the client names a resource
   (`/orders/123`, `?user_id=`), re-check ownership at the **data layer for that exact record on
   every path — read *and* write** — even when the user is authenticated and the UI hid the link.
@@ -79,9 +83,9 @@ passkeys as the **strong** factor, keep TOTP as fallback, not primary. Syncable 
 NIST AAL2; hardware-bound keys are needed for AAL3.
 
 ## 4. Passwords & credential storage
-Hash with **Argon2id** at the current OWASP minimum (e.g. 19 MiB / 2 iterations / parallelism 1,
-or 46 MiB / 1 / 1 — re-verify the live figure) — not plain bcrypt unless legacy, **never**
-SHA-256/MD5. The bcrypt footgun: it silently truncates at **72 bytes**, so long passphrases
+Hash with **Argon2id** at the current OWASP minimum (parameter examples →
+`references/hardening-reference.md`; re-verify the live figure) — not plain bcrypt unless legacy,
+**never** SHA-256/MD5. The bcrypt footgun: it silently truncates at **72 bytes**, so long passphrases
 collide — if you must use bcrypt, pre-hash with SHA-256+base64 or enforce the limit. Per NIST SP
 800-63B: require length (≥8, support ≥64 / passphrases), screen against breached-password lists,
 and explicitly do **not** impose composition rules or periodic rotation — both are now
@@ -106,20 +110,21 @@ for pure-JSON APIs, require a custom header (e.g. `X-CSRF-Token`) that a simple 
 can't set.
 
 ## 7. SSRF: an access-control problem, allowlist-only
-SSRF is its own OWASP category (A10:2021), not part of A01 — defend it with an **allowlist of permitted hosts, never a denylist of
-bad IPs**. The self-host bug: validate-then-fetch is vulnerable to DNS-rebinding/TOCTOU —
-**resolve the hostname once, check the resolved IP against the allowlist, then connect to that
-exact IP**, and disable HTTP redirect-following on server-side fetches. Block loopback/private/
-link-local ranges (127/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7, fe80::/10).
-Even on one box, `169.254.169.254` (cloud metadata) and your own localhost-bound admin/DB ports
-are the prize — **bind internal services to 127.0.0.1 and firewall everything but 443.**
+SSRF was its own category in the 2021 list (A10:2021); recent revisions fold it into Broken
+Access Control — verify the current list before citing any number. Defend it with an **allowlist
+of permitted hosts, never a denylist of bad IPs**. The self-host bug: validate-then-fetch is
+vulnerable to DNS-rebinding/TOCTOU — **resolve the hostname once, check the resolved IP against
+the allowlist, then connect to that exact IP**, and disable HTTP redirect-following on
+server-side fetches. Block loopback/private/link-local ranges (full range list →
+`references/hardening-reference.md`). Even on one box, `169.254.169.254` (cloud metadata) and
+your own localhost-bound admin/DB ports are the prize — **bind internal services to 127.0.0.1
+and firewall everything but 443.**
 
 ## 8. Security misconfiguration: ship hardening as config
-The highest-leverage, lowest-effort wins for one server (A02). Serve only HTTPS (**HSTS**); set a
-**strict nonce-based CSP** (`script-src 'nonce-…' 'strict-dynamic'`, no `unsafe-inline`/
-`unsafe-eval`; deploy Report-Only first, then enforce) — the real second line against XSS after
-output encoding. Add `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and
-`frame-ancestors`/`X-Frame-Options`. Disable stack traces / debug mode / verbose errors in prod,
+The highest-leverage, lowest-effort wins for one server (A05:2021). Serve only HTTPS (**HSTS**);
+set a **strict nonce-based CSP** (deploy Report-Only first, then enforce) — the real second line
+against XSS after output encoding — plus the standard hardening headers (full set + values →
+`references/hardening-reference.md`). Disable stack traces / debug mode / verbose errors in prod,
 remove default accounts and sample apps, keep OS/runtime/deps patched, and run as a **non-root,
 least-privilege** service user with the DB on localhost only.
 
@@ -137,7 +142,7 @@ design discipline, distinct from any per-change review. Draw a one-page data-flo
 each crossing through Spoofing / Tampering / Repudiation / Information-disclosure / DoS /
 Elevation-of-privilege, writing the mitigating control next to each. Fixing a design flaw here is
 ~100× cheaper than in prod, and it catches the missing-authz and SSRF-shaped issues no linter
-will. Design in **security logging/alerting** for auth events (A09) too — you can't detect
+will. Design in **security logging/alerting** for auth events (A09:2021) too — you can't detect
 credential-stuffing or IDOR-probing you never log.
 
 ## Honest exit

@@ -1,14 +1,16 @@
 ---
 name: truestack-dependency-management
-description: Own the ongoing dependency and supply-chain lifecycle of a self-hosted app — pinning,
-  cooldown-gated update automation, vulnerability triage, SBOMs, license policy, and supply-chain
-  risk. Use when the request is to add a package as a new project dependency (not an incidental
-  setup/CI step), update / bump / upgrade / pin dependencies, edit a lockfile, set up Renovate /
-  Dependabot / cooldown / minimumReleaseAge, run npm audit / pip-audit / osv-scanner, handle a
-  CVE / GHSA / security advisory, judge "is this package safe / upgrade or wait", respond to a
-  supply-chain attack / compromised package / hijacked maintainer, generate an SBOM / CycloneDX /
-  SPDX / VEX, enforce license compliance / copyleft, or address typosquatting / dependency
-  confusion / install scripts / provenance / SLSA / transitive deps.
+description: Own the ongoing dependency and supply-chain lifecycle of a self-hosted app. Use to
+  add a package as a new project dependency (not an incidental setup/CI step), update / bump /
+  upgrade / pin dependencies, edit a lockfile, set up Renovate / Dependabot / cooldown /
+  minimumReleaseAge, run npm audit / pip-audit / osv-scanner, handle a CVE / GHSA / security
+  advisory, judge "is this package safe / upgrade or wait", respond to a supply-chain attack /
+  compromised package / hijacked maintainer, generate an SBOM / CycloneDX / SPDX / VEX, enforce
+  license compliance / copyleft, or address typosquatting / dependency confusion / install
+  scripts / provenance / SLSA / transitive deps. Owns update-bot and scanner policy — including
+  the github-actions ecosystem and audit/CVE fail thresholds — even when enforced in CI;
+  truestack-ci-and-delivery only wires the pipeline stage and initial SHA pins. If a new package
+  collects or transmits personal data, follow on with truestack-data-privacy.
 ---
 
 # truestack-dependency-management
@@ -50,8 +52,8 @@ The dominant recent attack is a hijacked-maintainer release the registry pulls w
 report (the 2025 nx and chalk/debug hijacks are the canonical examples — auto-research current
 ones before citing). A maturity gate that quarantines fresh releases neutralizes the whole class.
 - Set Renovate **`minimumReleaseAge`** (formerly `stabilityDays`) or Dependabot **`cooldown`** to
-  **3–7 days** (Mend's best-practices preset now defaults npm to 3 days, opt-out). Longer for major,
-  shorter for patch.
+  **3–7 days** (as of 2025, Mend's best-practices preset defaulted npm to 3 days, opt-out —
+  auto-research the current default before citing it). Longer for major, shorter for patch.
 - **Critical nuance most teams miss:** cooldown applies to *routine version bumps only* — **never**
   to security/CVE updates. Those flow immediately. You wait out poisoning without delaying real
   fixes. Wire the two paths separately.
@@ -84,8 +86,8 @@ For a multi-stack box, ecosystem-native tools each see only their own world.
 Raw scanner output is mostly noise: it flags every matching CVE whether or not the vulnerable
 function is on any code path.
 - **Practical gate:** fail CI only on a finding that (a) is at/above your severity bar **AND** (b)
-  has an available fix you're not on. Reachability-aware tools cut volume 70–90%; emitting/consuming
-  **VEX** ("not affected" / "fixed") suppresses 80–90% of non-actionable findings.
+  has an available fix you're not on. Reachability-aware tools cut the volume dramatically;
+  emitting/consuming **VEX** ("not affected" / "fixed") suppresses most non-actionable findings.
 - Record every deliberate accept/defer as **VEX** so the same dead CVE doesn't re-block every build.
 - Run a **CVE SLA, not a zero-CVE fantasy**: e.g. Critical 48h, High 7d, with documented exceptions.
 
@@ -94,9 +96,8 @@ Generate **CycloneDX** (OWASP, ECMA-424; security/VEX-native) or **SPDX** (ISO/I
 license-strong) — or both, conversion is cheap — **on every build from the resolved lockfile**,
 attach it to the artifact, and **diff against the last release**. The diff *is* the control: an
 unexpected new transitive dep or a maintainer/namespace change is your earliest hijack/confusion
-signal. Meet the CISA/NTIA minimum elements (supplier, component, version, unique IDs, dependency
-relationships, author, timestamp) plus the 2025 CISA draft additions (hash, license, tool,
-generation context).
+signal. Meet the CISA/NTIA minimum elements plus the 2025 CISA draft additions — field list in
+**`references/standards.md`**.
 
 ## 7. License policy as a hard CI gate — on transitives too
 A permissive direct dep can pull a copyleft (GPL/AGPL) or no-license transitive that legally taints
@@ -117,10 +118,9 @@ moment a wrong name is typed). Pair them correctly:
   provenance as necessary-not-sufficient (bypasses have been demonstrated).
 
 ## 9. Map controls to the standards so the policy is auditable, not vibes
-Name the anchor for each control: lockfile + provenance verify → **PS.2 / PS.3** (read against
-SLSA); vuln scan + triage SLA → **RV.1 / RV.2 / RV.3**; SBOM → **EO 14028 §4e + NTIA elements**;
-component selection/ingestion → **PW.4 + SP 800-161 C-SCRM**. This turns "we scan" into a defensible
-posture and shows what's missing.
+Name the standards anchor for each control — SSDF (SP 800-218) PS/PW/RV practices, EO 14028,
+SP 800-161 C-SCRM; the full control→anchor mapping lives in **`references/standards.md`**. This
+turns "we scan" into a defensible posture and shows what's missing.
 
 ## Honest exit
 SHA-pinning Actions (which `truestack-ci-and-delivery` already does) closes the CI-runner chain — it does

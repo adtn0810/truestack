@@ -2,9 +2,10 @@
 name: truestack-react-frontend
 description: Build or reshape React UI to a professional bar — distinctive visual design
   AND sound front-end engineering. Use whenever the user is building a React component,
-  page, screen, or app, styling UI, or improving an existing interface — even if they only
-  say "build the dashboard" or "make this page nicer". Covers design taste, component
-  architecture, state, data fetching, performance, accessibility, and testing.
+  page, screen, or app, or styling or improving an existing React interface — even if
+  they only say "build the dashboard" or "make this page nicer" (whole-app architecture
+  for a brand-new build still starts in truestack-architecture-planning). Covers design taste,
+  component architecture, state, data fetching, performance, accessibility, and testing.
 ---
 
 # truestack-react-frontend
@@ -15,7 +16,9 @@ re-renders, no accessibility, data waterfalls). This skill holds **both** bars �
 distinctive, intentional design *and* clean, fast, accessible React.
 
 Read project memory first (`CLAUDE.md` + `.ai/memory/`) for the design language, component
-conventions, and stack. If the request is ambiguous, clarify first (same loop as `truestack-architecture-planning`).
+conventions, and stack. If the request is ambiguous, clarify first (same loop as
+`truestack-architecture-planning`) — and for a new build, the planning/scoping step itself
+belongs to `truestack-architecture-planning`; this skill picks up at implementation.
 Ground framework claims in the project's actual dependencies (React version, compiler/bundler
 config) and current docs — don't assert library behavior from recall.
 
@@ -30,12 +33,15 @@ anyone else's. Ground every choice in the actual subject — its world, vocabula
 - **Avoid the AI-design clusters** — cream-bg + serif + terracotta; near-black + acid accent; broadsheet hairline columns. Legitimate for some briefs, but defaults; don't spend a free axis on them.
 
 For the full token-system process (color / type / layout / signature brainstorm, the
-self-critique pass, and copywriting) → **`references/design-system.md`**.
+self-critique pass, and copywriting) → **`references/design-system.md`**. When a dedicated
+design skill (e.g. frontend-design) is installed in this environment, defer the visual-design
+pass to it — it is the maintained source of this guidance and `references/design-system.md`
+is the fallback when none is present. The engineering pass below always runs here.
 
 ## 2. Engineer it right (the part design skills skip)
 - **Components** — single responsibility, small and focused, one per folder. Pull reusable logic into **custom hooks**; keep components **pure** (no side effects in render). Prop-driven over global state. TypeScript contracts on props.
-- **State** — local first → **Context** for low-frequency global (theme/auth) → **TanStack Query / SWR** for *server* state (never store fetched data in Redux) → a client store (Zustand / Redux Toolkit) only for complex shared client state.
-- **React 19 + Compiler** — the **React Compiler is a separate, opt-in build plugin, not part of React 19 itself**: where it's enabled in the build config, stop hand-writing `useMemo`/`useCallback`; where it isn't, keep targeted manual memoization on Profiler-proven hot paths. Use **Actions + `useOptimistic` + `useFormStatus`** for forms/optimistic UI, **`use()`** for promises/context, native `<title>`/`<meta>`, and `ref` as a prop (no `forwardRef`).
+- **State** — climb the four-step tree (local → Context → server-state lib → client store) only as far as the level below can't hold it; **never store fetched data in Redux**.
+- **React 19 + Compiler** — the **React Compiler is a separate, opt-in build plugin, not part of React 19 itself**; whether to hand-memoize depends on whether it's enabled (memoization rule in the reference). Use **Actions + `useOptimistic` + `useFormStatus`** for forms/optimistic UI, **`use()`** for promises/context, native `<title>`/`<meta>`, and `ref` as a prop (no `forwardRef`).
 - **Data** — wrap fetches in **Suspense** with real skeletons; avoid the client waterfall (mount → effect → fetch → re-render). With a framework that supports Server Components, render server-first and keep interactivity in small client islands.
 - **States** — error boundaries around critical pieces; design the empty and error states as deliberately as the happy path.
 

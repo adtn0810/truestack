@@ -12,7 +12,7 @@ with process that sizes itself to the work.
 - **`truestack-orchestrate` router** — classifies any request, right-sizes it, runs the canonical chain, and gates everything through `truestack-quality-control`; routes to the best skill even when it lives in another installed set.
 - **Enforced governance** — a PreToolUse hook denies catastrophic and asks on money/destructive/schema/outbound tool calls (84-case tested). *Enforced once wired:* automatic with plugin install, a one-time settings merge with drop-in install (step 2 below). The append-only MCP approval log is **skill-directed** (the model writes it under the `truestack-mcp-integration` skill), not hook-enforced.
 - **Honesty, machine-checked** — an always-on grounding contract, a code↔memory reconciliation tally, and auto-research of current-fact decisions from authoritative sources.
-- **Full lifecycle** — prompt sharpening · plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation · plain-English explanation.
+- **Full lifecycle** — prompt optimization · plan · backend/frontend · API contract · migrations · deploy · CI/CD · observability · security · dependencies · data-privacy · debugging · reverse-engineering · research · scheduling · multi-agent coordination · self-evaluation · plain-English explanation.
 - **Self-measuring** — ships its own deterministic skill lint + a behavioral routing eval, both run in CI.
 
 ## The skills (23)
@@ -20,7 +20,7 @@ with process that sizes itself to the work.
 | Skill | Fires on | Job |
 |---|---|---|
 | `truestack-orchestrate` | **first, on any non-trivial request** | front-door router: ground → right-size → route to the right skill(s) → run the canonical chain → gate through `truestack-quality-control` |
-| `truestack-role-prime` | every `truestack-orchestrate` handoff / "sharpen this prompt" / "adopt an expert persona" | turn a raw request into a sharpened expert brief — matching persona, explicit goal, labeled assumptions — before any skill runs on it |
+| `truestack-prompt-optimizer` | every `truestack-orchestrate` handoff / "optimize my prompt" / "sharpen this prompt" / "adopt an expert persona" | turn a raw prompt into an optimized brief — task type, required components (ask when a required one can't be inferred), zero-shot / few-shot / chain-of-thought technique, matching persona — before any skill runs on it |
 | `truestack-project-memory` | first task / "remember" / stale facts | study the repo, maintain committed memory + the always-on contracts (honesty, communication, clarify, boundaries, tool-use) |
 | `truestack-architecture-planning` | designing/scoping new work | right-size → clarify (loops) → architecture → testable criteria → tasks (parallel vs sequential) → gate risk |
 | `truestack-backend-development` | implementing backend | match/recommend stack (Express · .NET · Python) → accurate, load-safe code; **build loop** to acceptance, or an honest score |

@@ -1,15 +1,16 @@
 ---
 name: truestack-observability
 description: Instrument a self-hosted backend so you can see what it's doing in production —
-  structured logging, metrics, distributed tracing, health checks, and SLO/burn-rate alerting.
-  Use whenever the user wants to "make this service observable", "add observability", set up
-  "structured logging" / "JSON logs", add "OpenTelemetry" / "OTel" / "OTLP" / an "OTel Collector",
-  add "metrics" / "Prometheus" / "Grafana" / "RED" / "USE", add "distributed tracing" / "spans" /
-  a "correlation ID" / "request ID" / "trace ID in logs", expose a "health" / "readiness" /
-  "liveness" endpoint as a monitoring signal, set up "SLOs" / "error budget" / "burn-rate alerts",
-  or fix "noisy alerts", "high cardinality" / "too many timeseries", "logs filling the disk",
-  "add a redaction processor to the telemetry pipeline", or "I have no telemetry yet / can't
-  see what my service is doing".
+  structured logging, metrics, distributed tracing, health-check monitoring, and SLO/burn-rate
+  alerting. Use whenever the user wants to "make this service observable", "add observability",
+  set up "structured logging" / "JSON logs", add "OpenTelemetry" / "OTel" / "OTLP" / an "OTel
+  Collector", add "metrics" / "Prometheus" / "Grafana" / "RED" / "USE", add "distributed
+  tracing" / "spans" / a "correlation ID" / "request ID" / "trace ID in logs", monitor or alert
+  on an existing "health" / "readiness" / "liveness" endpoint (creating or wiring the endpoint
+  itself belongs to truestack-deploy-and-runtime), set up "SLOs" / "error budget" / "burn-rate
+  alerts", or fix "noisy alerts", "high cardinality" / "too many timeseries", "logs filling the
+  disk", "add a redaction processor to the telemetry pipeline", or "I have no telemetry yet /
+  can't see what my service is doing".
 ---
 
 # truestack-observability
@@ -27,8 +28,10 @@ an OTLP endpoint, a Collector config, or a dashboard, record the command/decisio
 Adding a Collector, wiring an OTLP exporter on the request path, or changing a health probe an
 orchestrator already restarts on is **shippable infra** — route it through `truestack-architecture-planning`'s
 approval gate before writing it, and let `truestack-quality-control` gate it before "done". Destructive or
-deploy/migration steps (dropping a metrics volume, repointing a probe in prod) hit the enforced
-PreToolUse gate in `hooks/` — they need an explicit yes, not just an intent.
+deploy/migration steps (dropping a metrics volume, repointing a probe in prod) hit the PreToolUse
+gate in `hooks/` where it's wired — they need an explicit yes, not just an intent. If the gate is
+not installed in this environment, ask the user explicitly before any destructive or prod-affecting
+step — the protection degrades to a manual ask, never to silence.
 
 **Where this skill sits:** it builds the *standing* telemetry that lets you see production — it
 **feeds evidence to** `truestack-root-cause-debugging` (it is not the active bug investigation) and is not
@@ -45,13 +48,13 @@ Emit a counter; don't count log lines to fake a metric. Put the user/request id 
 **never** on the metric.
 
 ## 2. Bound metric cardinality at the source (the #1 single-box footgun)
-The OTel SDK caps each metric stream at ~2000 timeseries per cycle by default; everything past it
-collapses into a synthetic `otel.metric.overflow=true` bucket and **silently corrupts the data**.
+Past the SDK's per-stream cap, new timeseries collapse into a synthetic overflow bucket and
+**silently corrupt the data** — the dashboards keep rendering, and lie.
 - Never put unbounded values in a metric attribute: `user_id`, `request_id`, raw URL path, email,
   full SQL, error-message string. Those belong on traces/logs.
 - Template high-variability dimensions: `http.route="/users/{id}"`, never `/users/4821`.
-- Set explicit per-metric limits via the View API / `aggregation_cardinality_limit` — don't rely on
-  catching it after the dashboards already lied.
+- Set explicit per-metric limits at the SDK — don't rely on catching it after the dashboards
+  already lied. Default cap, overflow marker, and View-API mechanics: **`references/cardinality.md`**.
 
 ## 3. RED for services, USE for the box — the only two dashboards you maintain
 - **RED** per endpoint — **R**ate, **E**rrors, **D**uration — answers "are requests served well?"
@@ -110,11 +113,10 @@ feeds `truestack-root-cause-debugging`.
 
 ## 10. Alert on SLO burn rate, not raw thresholds (the cure for noisy alerts)
 A static "error rate > X" pages on every blip or misses a slow budget drain. Use multi-window
-multi-burn-rate (Google SRE tiers as the start): **14.4× over 1h → page now**, **6× over 6h →
-page/ticket**, **1× over 3 days → ticket**. Require **both** a short and a long window hot before
-paging, so a transient spike lights the short window but not the long one and stays quiet. The
-most-skipped, most-valuable tier is the slow 3-day ticket that catches gradual degradation no one
-would otherwise notice.
+multi-burn-rate (Google SRE tiers as the start) and require **both** a short and a long window hot
+before paging, so a transient spike lights the short window but not the long one and stays quiet.
+The most-skipped, most-valuable tier is the slow multi-day ticket that catches gradual degradation
+no one would otherwise notice. Tier table (multipliers, windows, actions): **`references/alerting.md`**.
 
 ## Honest exit
 Instrument only what you can actually verify firing — trigger the path, see the metric/trace/log

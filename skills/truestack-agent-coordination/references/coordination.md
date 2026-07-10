@@ -6,13 +6,13 @@ Each agent reads all rows, writes ONLY its own.
 ```
 # Parallel run: <feature>   contracts: <link/section>   merge order: A -> B -> C
 
-| Task          | Owner   | Scope (files/dirs)  | Depends on | Status      | Branch      |
-|---------------|---------|---------------------|------------|-------------|-------------|
-| A: schema     | agent-A | prisma/, src/db/    | -          | done        | feat/schema |
-| B: auth routes| agent-B | src/routes/auth/    | A          | in-progress | feat/auth   |
-| C: tests      | agent-C | tests/              | A, B       | queued      | feat/tests  |
+| Task          | Owner   | Scope (files/dirs)  | Depends on | Status      | Claimed/Updated  | Branch      |
+|---------------|---------|---------------------|------------|-------------|------------------|-------------|
+| A: schema     | agent-A | prisma/, src/db/    | -          | done        | 2026-07-11 14:20 | feat/schema |
+| B: auth routes| agent-B | src/routes/auth/    | A          | in-progress | 2026-07-11 14:05 | feat/auth   |
+| C: tests      | agent-C | tests/              | A, B       | queued      | -                | feat/tests  |
 ```
-Status: queued · in-progress · blocked · done. Update your row when you start, block, or finish.
+Status: queued · in-progress · blocked · done. Update your row — status + Claimed/Updated stamp — when you start, block, or finish.
 
 ## Status file — `.ai/agents/<task>.status` (or `RESULTS.md` in the worktree)
 ```json
@@ -53,3 +53,5 @@ Each preset is a ledger seed + merge order. Trim to the actual work; never excee
 | research  | truestack-deep-research fan-out (RO)                        | none (RO) | all parallel                           | cross-verify before acting |
 
 Read-only (RO) presets need coordination (synthesis) but not worktrees; any writing role needs both.
+Skill bindings: debug hypotheses probe per `truestack-root-cause-debugging`; feature's writers are
+`truestack-backend-development` ∥ `truestack-react-frontend`.

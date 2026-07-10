@@ -8,9 +8,10 @@ description: Design the interface contract for an API before it's implemented �
   "deprecate an endpoint" / "sunset header" / a "breaking change" / "backward compatible API",
   shape an "error response" / "problem+json" / "RFC 9457" / "what status code", add an
   "idempotency key" / "prevent double charge on retry" / "make POST safe to retry", choose
-  "pagination" / "cursor vs offset" / "next page token", publish "rate limit headers" / "429
-  / quota", do "resource modeling" / "filtering and sorting" query params, "contract testing"
-  / "consumer-driven contracts", or design a "request/response shape" against "mass assignment".
+  "pagination" / "cursor vs offset" / "next page token", publish "rate limit headers" / design
+  the "429 + quota" policy, do "resource modeling" / "filtering and sorting" query params,
+  "contract testing" / "consumer-driven contracts", or design a "request/response shape"
+  against "mass assignment".
 ---
 
 # truestack-api-design
@@ -44,6 +45,9 @@ status codes have edge cases.
 - This skill owns the **authorization rules in the contract** (BOLA/BOPLA below) — the design
   discipline. `truestack-quality-control` runs the one-shot **SAFETY pass** that checks a given change against
   OWASP; it doesn't author the contract.
+- `truestack-application-security` owns the **app-wide authz model** (RBAC/ABAC, deny-by-default) and the
+  auth flows themselves; this skill specifies **object-ownership and field allow-lists inside the
+  contract schema** — the interface's slice of that model, not its replacement.
 - `truestack-mcp-integration` owns **untrusted tool output** crossing into the app; this skill owns the
   request/response schema that validates **client** input at the edge.
 - `truestack-observability` owns **PII redaction in telemetry**; keep PII out of URLs/query strings here so it
@@ -90,25 +94,14 @@ The two top API risks are interface-design failures, not code bugs — so they b
 
 ## 4. Idempotency-Key on every unsafe, retryable write
 Any POST/PATCH that creates money or side-effects **must** accept a client-generated
-`Idempotency-Key` (a UUID). Server contract:
-- Persist `key → first-response`, keyed **also** by a request-payload fingerprint.
-- On retry after completion → **replay** the stored response (same status + body).
-- While the original is still in flight → **409 Conflict**.
-- Same key, **different** payload → **422** (this catches client bugs).
-- Publish the key-retention/expiry window.
-
-On one box this is cheap — one indexed table whose unique constraint *is* the dedup lock — and it's
-the single highest-leverage reliability feature: without it, one network blip double-charges a
-customer. `truestack-backend-development` builds the table; the contract names the header and the rules.
+`Idempotency-Key` (a UUID) and replay the stored first response on retry — without it, one network
+blip double-charges a customer. Full server contract (replay / 409 / 422 semantics, the payload
+fingerprint, the one-table implementation) → `references/idempotency.md`.
 
 ## 5. Pagination — keyset/cursor by default, with a tie-breaker
-OFFSET/LIMIT degrades (the DB scans and discards N rows) and silently skips or duplicates rows when
-data shifts between page fetches. Use **keyset (cursor)** pagination over a **stable, indexed, unique**
-sort key. The trap teams hit: sorting by a non-unique column (`created_at`, `name`) needs the primary
-key as a **secondary tie-breaker**, and the opaque cursor must encode **both** columns — else rows
-sharing a timestamp are lost at the page boundary. Make the cursor **opaque** (base64 of the key tuple)
-so you can change the underlying sort without breaking clients. Return a `next` cursor, **not** a total
-count (counts are expensive and stale). Offset is acceptable only for small, bounded, admin-facing lists.
+Use **keyset (cursor)** pagination over a **stable, indexed, unique** sort key — OFFSET/LIMIT
+degrades and silently skips or duplicates rows when data shifts between page fetches. Cursor
+encoding, the non-unique-sort tie-breaker trap, and the narrow offset exception → `references/pagination.md`.
 
 ## 6. Version in the URI path; deprecate with standard headers
 Put the **major** version in the path (`/v1/`) — visible in logs, routable by the reverse proxy

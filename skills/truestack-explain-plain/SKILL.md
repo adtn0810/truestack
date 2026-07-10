@@ -7,7 +7,9 @@ description: Explain finished work or existing behavior in short, beginner-frien
   "what does this do", "walk me through what you did", "in simple terms", "make it
   simple", "teach me", "so I can learn", "I don't get it", or asks why you built it that
   way. Made for a junior developer who needs to understand and learn from the result, not
-  just receive working code.
+  just receive working code. Scoped to work just done or code already in context; when
+  understanding first requires investigating an unfamiliar artifact or system, route
+  through truestack-reverse-engineering first and explain the findings after.
 ---
 
 # truestack-explain-plain
@@ -47,11 +49,10 @@ handler sees it." Expert framing that assumes prior knowledge is the failure mod
 style choice.
 
 ## 3. Keep it short
-Three to six sentences, or one tight bullet list — never a wall of text. When the topic
-genuinely needs more, layer it: big picture → one level of detail → offer to go deeper on
-whichever part the reader picks. The first reply stays under ~150 words whatever the
-topic — the word cap governs when the two rules disagree — and deeper layers ship only
-after the reader picks one. Exhaustive is not the goal; understood is.
+First reply ≤ ~150 words — roughly three to six sentences or one tight bullet list, never
+a wall of text. When the topic genuinely needs more, layer it: big picture → one level of
+detail → offer to go deeper, expanding only the part the reader picks. Exhaustive is not
+the goal; understood is.
 
 ## 4. One analogy, when it clicks
 A simple analogy or mental model when it makes the concept land ("the connection pool is a
@@ -81,6 +82,5 @@ when you don't actually know why something works, say so plainly — an honest "
 let's check" teaches more than an invented clean story.
 
 ## Explain it simply
-This skill is the sibling footers grown to deliverable size. Close each lesson with one
-line naming what the reader can now do: "You can now trace a request through the
-middleware chain yourself."
+Close each lesson with one line naming what the reader can now do: "You can now trace a
+request through the middleware chain yourself."

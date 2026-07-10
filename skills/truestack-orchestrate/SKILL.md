@@ -2,8 +2,8 @@
 name: truestack-orchestrate
 description: Front-door router for this skill set — read FIRST on any non-trivial coding
   request, then dispatch to the right skill(s) in the right order. Use whenever a request
-  spans more than one step or you're unsure which skill fits — building, fixing, planning,
-  reviewing, researching, scheduling, or acting on an external system. Right-sizes the work,
+  spans more than one step or you're unsure which skill fits — building, fixing, scheduling,
+  acting on an external system, or chaining multi-step plans, reviews, or research runs. Right-sizes the work,
   carries the read-memory-first / honesty / clarify contracts into each step, chooses
   single-agent vs parallel, runs the canonical chains end to end, and gates everything
   through truestack-quality-control. Skip only for a single trivial one-off.
@@ -34,7 +34,7 @@ for what it covers.
 - **Trivial & unambiguous** (rename, copy tweak, one-liner): skip orchestration — the one obvious skill, then **truestack-quality-control**.
 - **Small** (contained, clear intent): the single relevant skill → **truestack-quality-control**.
 - **Substantial** (feature / service, several moving parts): run the full chain.
-- **High-risk** (irreversible · data · money · security · schema / migration · first prod deploy · auth/credential or privacy-policy design): full chain **plus** the **truestack-architecture-planning** approval gate **before** any code is written; route risky DDL/backfill through **truestack-database-migrations** (it also trips the PreToolUse gate in `hooks/`).
+- **High-risk** (irreversible · data · money · security · schema / migration · first prod deploy · auth/credential or privacy-policy design): full chain **plus** the **truestack-architecture-planning** approval gate **before** any code is written; route risky DDL/backfill through **truestack-database-migrations** (if the `hooks/` PreToolUse gate is wired in this install it also trips there — confirm it's active rather than assuming; if unwired, the approval gate is the only barrier).
 
 ## Route by intent
 Match the request to its skill — one or more. When several apply, run the chain in order.
@@ -61,7 +61,7 @@ Match the request to its skill — one or more. When several apply, run the chai
 | A shared reference/artifact — "how does this work", "reverse engineer this", "adopt/port this pattern", upgrading from a reference | **truestack-reverse-engineering** |
 | "Every day / weekly / remind me / run at / recurring" | **truestack-task-scheduling** |
 | "Score / rate / audit / evaluate / improve" a skill or skill set | **truestack-skill-evaluation** |
-| "Sharpen / enrich / rephrase this prompt" · "adopt an expert persona" — a raw ask needs an expert brief | **truestack-role-prime** (also runs automatically at every handoff) |
+| "Sharpen / optimize / rephrase this prompt" · "adopt an expert persona" — a raw ask needs an optimized brief | **truestack-prompt-optimizer** (also runs automatically at every handoff) |
 | "Explain this / what does this do / teach me / in simple terms" — a plain-English walkthrough is the deliverable | **truestack-explain-plain** |
 
 If nothing fits cleanly, say so and ask one short clarifying question — don't force a route.
@@ -78,7 +78,7 @@ catalog. Don't guess a seam from memory when the reference defines it.
 - Migration, deploy, CI/CD, security, API-contract, dependency, privacy, observability, parallel-build
   and recurring chains → **`references/routing.md`** — don't reconstruct a chain from memory when the
   catalog defines it.
-- **Always**: every chain reads truestack-project-memory first; every handoff is sharpened by truestack-role-prime; truestack-quality-control is the gate before "done"; truestack-explain-plain closes the chain in plain English; and code and project memory must reconcile — the tally balances — before anything is called done.
+- **Always**: every chain reads truestack-project-memory first; every handoff is optimized by truestack-prompt-optimizer; truestack-quality-control is the gate before "done"; truestack-explain-plain closes the chain in plain English; and code and project memory must reconcile — the tally balances — before anything is called done.
 
 ## Route beyond this set — pick the best skill, ours or not
 This set is the general, governed spine, not the deepest skill for every domain. When a specialist
@@ -94,10 +94,14 @@ genuinely independent tasks, the work is big enough to pay the overhead, and sha
 (schema / interfaces / API shapes) are defined first. Start at 2–3 agents.
 
 ## Handoff discipline
+- The order is fixed: ground → right-size → route → optimize the handoff (**truestack-prompt-optimizer**) →
+  dispatch. Optimizing runs after routing, never before it — the persona and required-component judgment
+  key off the destination, and right-sizing has already filtered the trivial work out.
 - Route, then let the destination skill own its method — don't re-explain or re-run its steps here.
 - Pass forward what it needs: the goal, the acceptance criteria, relevant memory, prior results —
-  sharpened first by **truestack-role-prime** (matching persona + explicit goal + labeled assumptions +
-  checkable criteria; intent unchanged). A handoff that echoes a vague ask verbatim is a defect.
+  optimized first by **truestack-prompt-optimizer** (matching persona + task-fitted technique + explicit
+  goal + labeled assumptions + checkable criteria; intent unchanged). A handoff that echoes a vague ask
+  verbatim is a defect.
 - After each step, check the result against its acceptance criteria before moving to the next. If
   a step fails, loop **within** that skill (build loop / verify-or-loop) — don't restart the chain.
 - **Nothing is "done" until truestack-quality-control passes** and every acceptance criterion maps to evidence (the full done-conditions live on the Always line above).

@@ -3,8 +3,9 @@ name: truestack-backend-development
 description: Implement backend code and recommend the best tech stack for the project at
   hand. Use whenever the user is writing server, API, or data-layer logic, choosing a
   language/framework/database, or asks to "build" or "code" a backend feature — even
-  without an explicit stack question. Optimizes for data accuracy, performance, and not
-  overloading a self-hosted single server.
+  without an explicit stack question. Planning for a brand-new build starts in
+  truestack-architecture-planning; this skill implements once a plan exists. Optimizes
+  for data accuracy, performance, and not overloading a self-hosted single server.
 ---
 
 # truestack-backend-development
@@ -74,9 +75,4 @@ criteria. After implementing, run `truestack-quality-control` (its intent check 
 - **Some unmet** → identify exactly which and why, fix, and re-run. Loop until they pass.
 - **Genuinely blocked** (missing information, an impossible or conflicting constraint, an external dependency you can't satisfy) → **stop looping and report an honest completion score**: criteria met / total, what blocks each unmet one, and what's needed to close it. Never report "done" for a goal you didn't meet — an accurate 7/10 the user can act on beats a false 10/10 (honesty contract). If repeated attempts stop making progress, escalate with that score rather than spinning.
 
-## Explain it simply
-Explain choices in plain English — say what a stack choice *means* and why, not just its
-name. Show tradeoffs or alternatives as a short list or table. After writing code, summarize
-what each change does in one plain line so the user always knows what happened.
-
-When implementation is complete, hand off: run **truestack-quality-control** before calling it done.
+**Explain it simply** — after the QC pass, hand the summary to `truestack-explain-plain`; that skill owns the plain-English discipline.

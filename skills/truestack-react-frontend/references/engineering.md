@@ -19,7 +19,7 @@
 - Server Components (with a supporting framework): server-first for data/content; client islands only where interactive. Pure SPA: lean on code-splitting + Query.
 
 ## Performance checklist (Core Web Vitals)
-- **Don't** reflexively hand-write `useMemo`/`useCallback` — if the React Compiler (opt-in build plugin) is enabled it handles memoization; without it, add manual memo where the Profiler shows a hot path.
+- **Don't** reflexively hand-write `useMemo`/`useCallback` — if the React Compiler is enabled in the build config it handles memoization; without it, add targeted manual memo only where the Profiler shows a hot path.
 - Code-split routes, modals, drawers, heavy charts (`React.lazy` + Suspense) — usually the single biggest initial-bundle cut; measure yours with the analyzer.
 - Virtualize lists > ~100 rows (`@tanstack/react-virtual`); mandatory at 500+.
 - Images: correct sizing, lazy-load below the fold, modern formats; reserve space to avoid layout shift.

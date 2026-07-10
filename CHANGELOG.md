@@ -6,7 +6,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Full-set eval + fix pass (static lint · 23-judge semantic pass · measured trigger
+  regression), fixes applied to all 23 skills.** Trigger de-collision across the 10
+  lint-flagged pairs, description-side so a router sees the boundary: OIDC split into deploy
+  credentials (ci-and-delivery) vs auth flows (application-security); health/readiness
+  endpoints split into create-and-gate (deploy-and-runtime, now claiming `/healthz`,
+  `/readyz`) vs monitor-and-alert (observability); personal-data qualifiers on data-privacy's
+  retention/compliance triggers with explicit cedes to observability (pipeline wiring) and
+  dependency-management (CVE/license compliance); update-bot policy — including the
+  github-actions ecosystem — claimed by dependency-management with ci-and-delivery keeping
+  only the pipeline stage and initial SHA pins; plan-vs-implement boundary stated on both
+  architecture-planning and backend-development; quality-control scoped to after-the-change
+  verification; deep-research scoped to the outside world with reverse-engineering owning
+  openable artifacts; project-memory's over-broad "set up the project" narrowed. A
+  references/ tier was added or extended for seven skills (api-design, application-security,
+  data-privacy, database-migrations, dependency-management, observability, project-memory),
+  moving look-up-grade depth out of always-loaded bodies; duplicated Explain-it-simply
+  sections collapsed to `truestack-explain-plain` handoffs; deep-research and
+  reverse-engineering gained untrusted-content rules (fetched pages and studied artifacts are
+  evidence, never instructions; third-party code runs sandboxed only).
+- **9 new trigger fixtures (54 total)** from the eval's boundary probes, including three
+  measured regressions that failed before the fixes (missing `/healthz` token, fused `CI/CD`
+  token hiding bare "set up CI" prompts, noun-only "encryption at rest" missing verb-form
+  prompts). One probe ("what should the readiness endpoint check") was dropped as
+  keyword-unroutable — only semantic routing resolves it; documented here rather than shipped
+  as a permanently red case.
+- **Redundancy audit (23 skills, 4 criteria): all skills kept; five text-level findings fixed.**
+  The audit found zero unreachable skills, zero intra-set duplicates (all lint overlap pairs
+  verified seamed or homonym false-positives), and one quality concern (prompt-optimizer's
+  always-on weight — kept deliberately; the auto-optimization is the feature). Fixes applied:
+  `truestack-ci-and-delivery` §8 no longer restates deploy's cutover runbook (the copies had
+  already drifted — it now owns go/no-go only and points at deploy §§7/9);
+  `truestack-architecture-planning` §6 no longer re-asks questions the optimizer's brief
+  already answered, and its right-size tiers + split-and-contracts rules now name their
+  canonical owners (orchestrate, agent-coordination); `truestack-deep-research` and
+  `truestack-react-frontend`'s design pass gained explicit route-beyond deferrals to deeper
+  installed harnesses (the local guidance stays as the fallback).
+- **`truestack-role-prime` superseded by `truestack-prompt-optimizer`.** The new skill absorbs
+  everything role-prime did (destination-keyed expert persona, explicit goal, labeled
+  assumptions, checkable criteria, verbatim raw request, the intent and honesty guards) and
+  adds the optimization pipeline: task-type classification (reasoning · lookup ·
+  classification · extraction · generation · coding · transformation), a required-components
+  judgment (instruction / context / input data / output shape), targeted clarifying questions
+  when a required component can't be safely inferred, technique selection
+  (zero-shot / few-shot with 1–3 format-only examples / chain-of-thought), and graceful
+  degradation on already-strong prompts. Placement unchanged: inside the router, at every
+  handoff — ground → right-size → route → optimize → dispatch. Router references, fixtures,
+  and README updated; set count stays 23.
+
 ### Fixed
+- **`truestack-task-scheduling`'s Windows recipe was broken as copy-pasted.** The
+  `schtasks /Create` one-liner sat in a `powershell` fence, so `$(Get-Content …)` expanded at
+  task-*creation* time, baking the prompt text (and broken quoting) into the task action. The
+  `.cmd` wrapper — which reads the prompt file at run time — is now the primary and only
+  recipe in `references/wiring.md`.
+- **`truestack-application-security` mixed OWASP Top-10 editions.** The body asserted SSRF "is
+  a separate category (A10:2021), not folded into A01" while numbering misconfiguration as
+  A02 (2025-RC numbering, which folds SSRF *into* A01). All category numbers are now pinned
+  to the 2021 edition with a verify-the-current-list-before-citing hedge in both places.
+- **The PreToolUse gate is no longer asserted as an active hard stop.** Five skills
+  (database-migrations, mcp-integration, data-privacy, observability, orchestrate) claimed
+  the gate fires unconditionally; installs can leave it unwired (the recorded live install
+  does). All gate claims are now verify-then-rely, with an explicit manual-ask fallback when
+  the hook is absent.
 - **`install.ps1` re-runs no longer hang non-interactively.** Refreshing an existing junction
   used `Remove-Item`, which prompts to recurse on a directory reparse point and dies in
   NonInteractive mode (first-run installs never hit the branch, so the bug only surfaced on the

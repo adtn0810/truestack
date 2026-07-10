@@ -1,10 +1,12 @@
 ---
 name: truestack-quality-control
 description: Run a deep quality-control sweep after ANY code change before the work is
-  considered done. Use automatically after implementing a feature or fixing a bug, and
-  whenever the user asks to "check", "QC", "verify", or "make sure it's solid". Runs
-  tests, type-check and lint, a multi-axis review, a load/perf check, a safety pass, and
-  an intent check. Invoked by truestack-backend-development and truestack-root-cause-debugging; also runs on request.
+  considered done — automatically once a feature or bugfix is implemented, and whenever
+  the user asks to "check", "QC", or "verify" a code change or the work just done, or
+  says "make sure it's solid". Use only AFTER the change exists — verifies, never
+  implements; fix-first requests enter via truestack-orchestrate. Runs tests, type-check
+  and lint, a multi-axis review, a load/perf check, a safety pass, an intent check, and
+  a memory-reconciliation tally. Invoked by truestack-backend-development and truestack-root-cause-debugging; also runs on request.
 ---
 
 # truestack-quality-control
@@ -51,8 +53,10 @@ paths, sanity-check under representative load — measure, don't guess.
 No secrets or sensitive data added · untrusted input validated before use · permission /
 trust boundaries preserved or explicitly reviewed · risky changes have a rollback path. For
 changes touching auth, input, data access, or external calls, run the OWASP-aligned checklist
-— **see `references/security.md`**. For a dependency the change adds or bumps, **auto-research
-current advisories** (CVEs / version-specific vulns) from authoritative sources — don't clear it from recall.
+— **see `references/security.md`**. For a dependency the change adds or bumps, run the stack's
+**quick audit tool** in-sweep (`npm audit` / `pip-audit` / `dotnet list package --vulnerable` — per the
+reference); deeper CVE triage (advisory research, upgrade-or-wait calls) hands off to
+**truestack-dependency-management** — either way, never clear a dependency from recall.
 
 ## 6. Intent + memory reconciliation (matches the plan? matches the code?)
 Map each acceptance criterion to concrete evidence — a passing test, a runtime check, or a

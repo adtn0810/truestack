@@ -24,12 +24,23 @@ Store the run prompt in the repo so it's versioned, then:
 - Log to a file (delivery evidence) and let the spec's failure policy decide alerting.
 
 ## 2. Windows Task Scheduler
+Commit a small `.cmd` wrapper next to the prompt file and point `/TR` at it — the wrapper
+cd's to the repo and reads the prompt at **run** time, so there's no creation-time `$()`
+expansion, no nested-quoting failure, no `/TR` length limit:
+
+```cmd
+@echo off
+rem .ai\jobs\daily-check.cmd — versioned with the repo; edit the .prompt.md, not the task
+cd /d "%~dp0..\.."
+type .ai\jobs\daily-check.prompt.md | claude -p >> .ai\jobs\daily-check.log 2>&1
+```
+
 ```powershell
 schtasks /Create /TN "truestack\daily-check" /SC DAILY /ST 06:00 `
-  /TR "cmd /c cd /d C:\path\to\repo && claude -p ""$(Get-Content .ai\jobs\daily-check.prompt.md -Raw)"" >> .ai\jobs\daily-check.log 2>&1"
+  /TR "C:\path\to\repo\.ai\jobs\daily-check.cmd"
 ```
-Simpler and more robust: point `/TR` at a small `.cmd` wrapper in the repo that reads the
-prompt file and runs `claude -p` — avoids quoting bugs. Confirm with `schtasks /Query /TN ...`.
+
+Confirm with `schtasks /Query /TN "truestack\daily-check"`.
 
 ## 3. CI cron (GitHub Actions)
 ```yaml

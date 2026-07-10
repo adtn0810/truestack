@@ -32,10 +32,11 @@ the DDL/backfill that performs a purge → **truestack-database-migrations**; th
 nicer request with nothing broken → the builder skill for that layer (**truestack-backend-development** /
 **truestack-react-frontend**).
 
-**Sharpening vs clarifying vs planning:** restating a raw ask as an expert brief at handoff (persona,
-explicit goal, labeled assumptions, checkable criteria) → **truestack-role-prime**; a real ambiguity that
-two readings can't survive → clarify-then-proceed (a contract, not a skill); turning the sharpened intent
-into scope, architecture, and the approval gate → **truestack-architecture-planning**.
+**Optimizing vs clarifying vs planning:** rewriting a raw ask into an optimized brief at handoff
+(persona, task-fitted technique, explicit goal, labeled assumptions, checkable criteria) →
+**truestack-prompt-optimizer**; when a required component of the prompt can't be safely inferred, its
+targeted questions ARE the clarify-then-proceed contract applied at the handoff; turning the optimized
+intent into scope, architecture, and the approval gate → **truestack-architecture-planning**.
 
 **Explain vs investigate vs research:** translating what was just done, or how code already in context
 behaves, into a short beginner-level lesson → **truestack-explain-plain**; building a verified model of a
@@ -61,7 +62,7 @@ then explain the findings plainly.
 - **Dependency change / supply-chain** → truestack-dependency-management → truestack-backend-development (apply the bump) → truestack-quality-control  *(the scan + SBOM step is encoded in CI via truestack-ci-and-delivery; a consequential new dep or cooldown override goes through truestack-architecture-planning's gate first)*
 - **Privacy / compliance** → truestack-architecture-planning (gate the policy design) → truestack-data-privacy (classification, retention, erasure, consent, audit, breach) → truestack-database-migrations (the purge/erasure DDL + bounded backfill) → truestack-backend-development (consent/audit/erasure code) → truestack-quality-control  *(truestack-observability implements the PII-redaction policy truestack-data-privacy defines; destructive purge/key-destruction also hits the PreToolUse gate in `hooks/`)*
 - **Recurring anything** → wrap the chain with truestack-task-scheduling
-- **Always**: every chain reads truestack-project-memory first; every handoff is sharpened by truestack-role-prime; truestack-quality-control gates "done"; truestack-explain-plain closes the chain in plain English; the code↔memory tally must balance before anything is called done.
+- **Always**: the canonical **Always** line in `SKILL.md` applies to every chain — one copy, not restated here.
 
 ## Route beyond this set — the mechanics
 - **Discover, don't assume** — confirm the specialist set is actually available (its skills appear

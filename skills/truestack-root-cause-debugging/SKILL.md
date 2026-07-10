@@ -1,7 +1,8 @@
 ---
 name: truestack-root-cause-debugging
 description: Investigate a bug, error, crash, failing test, regression, or unexpected/slow
-  behavior that is a DEFECT, and fix it at the root. Use the moment something is reported
+  behavior that is a DEFECT, and fix it at the root (slowness owned by a specific discipline
+  — a slow migration, deploy-time downtime — routes to that skill). Use the moment something is reported
   broken or an error/stack trace is pasted — even a one-line "this isn't working". Confirms
   the real root cause with evidence before changing anything, and applies a permanent fix,
   never a temporary patch.
@@ -84,8 +85,5 @@ documented) · relevant tests/build pass · root cause stated · non-obvious fun
 captured if warranted · no temporary instrumentation left behind.
 
 ## Explain it simply
-State the root cause in one plain sentence before any technical detail. Present the fix as a
-short list — cause → fix → guard — not a wall of prose. If timing or measurements matter,
-show them in a small table. The user should never have to guess what was wrong or what you changed.
-
-After the fix, hand off: run **truestack-quality-control** to verify the fix and confirm no regressions.
+State the root cause in one plain sentence before any technical detail — that sentence is the
+debugging deliverable. For the plain-English walkthrough, hand off to **truestack-explain-plain**.
