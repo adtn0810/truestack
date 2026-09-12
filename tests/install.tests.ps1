@@ -46,7 +46,7 @@ try {
     Run-Install $fresh @() 'Existing local file differs'
     Assert ((Get-Content $edited -Raw) -eq 'local customization') 'Collision overwritten'
     Run-Install $fresh @('-ReplaceExisting')
-    $copies = @(Get-ChildItem (Join-Path $fresh '.agents/truestack/backups') -Filter SKILL.md -Recurse)
+    $copies = @(Get-ChildItem (Join-Path $fresh '.agents/truestack/backups') -Filter SKILL.md -Recurse -Force)
     Assert (@($copies | Where-Object { (Get-Content $_.FullName -Raw) -eq 'local customization' }).Count -eq 1) 'Original customization not backed up'
 
     $hooks = New-Home 'hooks home'
@@ -73,7 +73,7 @@ try {
     }
     Assert ((Get-FileHash (Join-Path $hooks '.codex/config.toml')).Hash -eq $configHash) 'Codex config changed'
     Assert ((Get-FileHash (Join-Path $hooks '.codex/auth.json')).Hash -eq $authHash) 'Authentication changed'
-    $backups = @(Get-ChildItem (Join-Path $hooks '.agents/truestack/backups') -Filter settings.json -Recurse)
+    $backups = @(Get-ChildItem (Join-Path $hooks '.agents/truestack/backups') -Filter settings.json -Recurse -Force)
     Assert ($backups.Count -eq 1 -and (Get-Content $backups[0].FullName -Raw) -eq $original) 'Original settings backup missing'
     $registeredHash = (Get-FileHash $settingsPath).Hash
     Run-Install $hooks @('-WireHooks')
