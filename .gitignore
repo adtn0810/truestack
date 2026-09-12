@@ -1,5 +1,5 @@
 # Secrets / local MCP overrides — NEVER commit real tokens.
-# Note: .mcp.json itself is intentionally committed (secret-free, ${VAR} expansion).
+# Local integration settings are not part of the release.
 .env
 .env.*
 .mcp.local.json

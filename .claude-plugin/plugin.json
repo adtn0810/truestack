@@ -1,8 +1,19 @@
 {
   "name": "truestack",
-  "version": "0.0.4",
-  "description": "Honesty-first coding skill set for Claude Code: 23 skills behind a truestack-orchestrate router, an enforced PreToolUse governance gate, committed repo-memory, and self-evaluation — tuned for solo, self-hosted work.",
-  "author": { "name": "adtn" },
+  "version": "0.1.0",
+  "description": "Ten focused engineering skills for planning, implementation, causal debugging, review, verification, complete execution, and recoverable deployment. Optional hook reminders; no forced router.",
+  "author": {
+    "name": "adtn"
+  },
   "license": "MIT",
-  "keywords": ["skills", "orchestrator", "backend", "react", "mcp", "quality-control", "memory", "multi-agent", "research", "self-hosted", "deploy", "ci-cd", "observability", "database-migrations", "skill-evaluation"]
+  "keywords": [
+    "skills",
+    "engineering",
+    "debugging",
+    "review",
+    "verification",
+    "deployment",
+    "claude",
+    "codex"
+  ]
 }

@@ -1,38 +1,28 @@
 name: ci
-
 on:
   push:
     branches: [main]
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
-  skill-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: "3.12"
-      - name: Skill lint (gates on any Critical finding via exit code)
-        run: python skills/truestack-skill-evaluation/scripts/skill_lint.py skills
-      - name: Lint unit tests (golden fixtures)
-        run: python skills/truestack-skill-evaluation/scripts/test_skill_lint.py
-
-  gate-tests:
-    runs-on: ubuntu-latest
+  checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
-      - name: PreToolUse gate tests
-        run: node hooks/test-gate.mjs
-      - name: Behavioral trigger eval (routing regression guard)
-        run: node skills/truestack-skill-evaluation/scripts/trigger_eval.mjs
-
+      - name: Package integrity
+        run: node --test tests/package.test.cjs
+      - name: Hook behavior
+        run: node --test hooks/test-skill-guard.cjs
+      - name: Isolated installer behavior
+        shell: pwsh
+        run: ./tests/install.tests.ps1
   secret-scan:
     runs-on: ubuntu-latest
     steps:
@@ -43,17 +33,3 @@ jobs:
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  plugin-validate:
-    runs-on: ubuntu-latest
-    # Informational until the Claude CLI is wired for headless CI; does not block merges yet.
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "22"
-      - name: Install Claude Code CLI (pinned; bump deliberately)
-        run: npm install -g @anthropic-ai/claude-code@2.1.198
-      - name: Validate plugin manifest
-        run: claude plugin validate .

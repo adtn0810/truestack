@@ -1,11 +1,17 @@
 {
   "name": "truestack",
-  "owner": { "name": "adtn" },
+  "metadata": {
+    "description": "Ten focused engineering skills for Claude Code and Codex."
+  },
+  "owner": {
+    "name": "adtn"
+  },
   "plugins": [
     {
       "name": "truestack",
       "source": "./",
-      "description": "Honesty-first coding skill set fronted by an orchestrate router: backend, React frontend, debugging, quality-control, repo-memory, multi-agent coordination, MCP integration, deep research, scheduling, and skill self-evaluation."
+      "version": "0.1.0",
+      "description": "Ten focused, portable engineering skills with optional local hook reminders."
     }
   ]
 }

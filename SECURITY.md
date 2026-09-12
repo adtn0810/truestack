@@ -1,47 +1,9 @@
-# Security Policy
+# Security policy
 
-`truestack` is a set of Claude Code **skills** (instructions/prompts) plus a small Node hook and
-config. It ships no runtime service, but an agent skill set still carries a real threat surface:
-it shapes what an autonomous agent does and which external tools it calls.
+The latest 0.1.x release receives fixes. Older releases are unsupported.
 
-## Supported versions
-The latest minor release receives fixes. See [CHANGELOG.md](CHANGELOG.md).
+truestack supplies agent instructions and optional local Node hook reminders. Neither is a security boundary. The hook does not enforce external-action authorization, validate every tool call, or prove that work is complete. Use the host's permissions and trust controls for tool access.
 
-| Version | Supported |
-|---|---|
-| 0.0.x (latest) | ✅ |
-| earlier | ❌ |
+The installer backs up modified existing files, refuses path links and unapproved collisions, and preserves unrelated settings. It cannot protect a compromised machine or concurrent hostile filesystem changes. Review the source before installation and keep secrets out of instructions, diagnostic output, and public contributions.
 
-## Threat model
-
-| Threat | Where it bites | Mitigation in this set |
-|---|---|---|
-| **Prompt injection** (OWASP LLM01) — a tool result / file / web page tells the agent to act | any skill that reads external data | `truestack-mcp-integration` treats every tool result as **untrusted data, never instructions**; the honesty contract forbids acting on injected instructions; the `Never` boundary bans following instructions from untrusted data. |
-| **Unsafe autonomous actions** — money moved, data destroyed, messages sent | `truestack-mcp-integration`, Bash/MCP tool calls | **Ask-first** boundary (money/destructive/schema/outbound) is **enforced** by the PreToolUse hook in [`hooks/`](hooks/README.md) — deny-catastrophic, ask-on-write-class, defer-the-rest — **once the hook is wired**: automatic on plugin install, a one-time settings merge on drop-in install (see hooks/README.md). Unwired = advisory only. |
-| **Secret exposure** | `.mcp.json`, logs, memory | `.mcp.json` is committed **secret-free** with `${VAR}` expansion only; `.gitignore` excludes `.env`/local overrides; `truestack-quality-control`'s safety pass scans for added secrets; "don't log full tool payloads with secrets/PII". |
-| **Supply chain** (OWASP LLM03) — an MCP server package is malicious or rug-pulled | `.mcp.json` running `npx <pkg>` | Pin MCP packages to an exact version (see below and `mcp-config.md`); review server changes in PRs; least-privilege credentials per server. |
-| **Advisory-only controls giving false assurance** | the whole set | This file is explicit about what is **enforced** (the hook) vs **advisory** (the rest). A markdown audit row is a record, not a runtime block. |
-
-## What is enforced vs advisory
-- **Enforced** (the harness can stop it): the PreToolUse gate in `hooks/` — deny/ask on destructive, financial, schema, and outbound tool calls. Verified by `node hooks/test-gate.mjs`.
-- **Advisory** (the model is asked to comply): the untrusted-data boundary, idempotency, verify-the-effect, the append-only audit log, and the per-skill discipline. Strong by design, but not harness-enforced.
-
-The gate is a **guardrail, not a sandbox** — it stops the obvious-catastrophic and forces a human
-yes on write-class effects. It does not make a compromised host or a malicious MCP server safe.
-
-## Reporting a vulnerability
-**Please do not open a public issue for a security problem.**
-
-1. Preferred: open a private report via the repository's **GitHub Security Advisories** ("Report a vulnerability").
-2. Or email the maintainer at `adtn.ai@outlook.com`.
-
-Include repro steps, the affected file(s)/skill(s), and impact. Expect an acknowledgement within
-a few business days and a fix or mitigation plan once triaged.
-
-## Hardening checklist for operators
-- [ ] Enable the PreToolUse hook (auto with plugin install; drop-in install must wire it into settings — see `hooks/README.md`) and run `node hooks/test-gate.mjs`.
-- [ ] Merge `hooks/permissions.template.json` into `.claude/settings.json`, duplicating the MCP block with your real servers' exact tool ids.
-- [ ] **Pin** every MCP server package to an exact version in `.mcp.json` (no bare `npx -y <pkg>`).
-- [ ] Keep secrets in env / a secret store; never in `.mcp.json` or `.ai/`.
-- [ ] Use least-privilege credentials per server (read-only role for read-only servers).
-- [ ] Run a secret scan (e.g. `gitleaks`) in CI on every push.
+Report vulnerabilities through this repository's private GitHub Security Advisory reporting when available. Do not post credentials or sensitive reproduction data in a public issue.

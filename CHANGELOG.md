@@ -4,7 +4,21 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-09-12
+
+### Changed
+- Replaced the 23 prefixed skills and forced router with ten concise, portable core engineering skills.
+- Added complete-target coverage, evidence-based debugging claims, persistent execution handoffs, and confirmed deployment targets with recoverable, bounded release storage.
+- Rebuilt the PowerShell installer around canonical `.agents/skills`, physical Claude mirrors, collision detection, managed hashes, backups, and linked-path refusal. Codex settings, authentication, models, permissions, and MCP configuration remain outside its scope.
+- Made hook reminders opt-in. Added five-second registrations for SessionStart, UserPromptSubmit, SubagentStart, matched PreToolUse/PostToolUse edits, and bounded Stop checks. Codex hook trust remains a user action.
+- Added isolated installer behavior checks and package integrity checks to Windows/Linux CI.
+- Added an optional portable working-agreements template; global instructions are never overwritten automatically.
+
+### Removed
+- Retired the old eight slash commands, default governance gate, forced role/model routing, MCP templates, and automatic committed-memory workflow. Historical specialty material remains in Git history.
+- Legacy installations require deliberate backup and removal from active discovery before upgrading; unrelated or same-name local skills are never automatically moved or deleted.
+
+## Previous unreleased work (0.0.x)
 
 ### Changed
 - **Full-set eval + fix pass (static lint · 23-judge semantic pass · measured trigger
