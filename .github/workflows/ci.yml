@@ -22,7 +22,13 @@ jobs:
         run: node --test hooks/test-skill-guard.cjs
       - name: Isolated installer behavior
         shell: pwsh
-        run: ./tests/install.tests.ps1
+        run: |
+          try { ./tests/install.tests.ps1 }
+          catch {
+            $message = $_.ToString().Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error::$message"
+            throw
+          }
   secret-scan:
     runs-on: ubuntu-latest
     steps:
