@@ -166,3 +166,7 @@ try {
         if ($resolved.StartsWith($tempPrefix) -and (Split-Path $resolved -Leaf) -like 'truestack-test-*') { Remove-Item -LiteralPath $resolved -Recurse -Force }
     } else { Write-Host "Test artifacts: $testRoot" }
 }
+# Expected child-process failures are assertions, not the final suite result.
+# Reach this only after every assertion and cleanup succeeds; GitHub's pwsh
+# wrapper otherwise propagates the last intentionally nonzero child exit code.
+exit 0
